@@ -1,0 +1,119 @@
+# `deskmate`
+
+The standalone deployment CLI for Deskmate. The normative directory schema,
+security guarantees, target behavior, and lifecycle are in
+[`docs/deploy-directory.md`](../docs/deploy-directory.md). `deskmate init` materializes
+the agent-consumable package runbook into the deployment repository.
+
+```bash
+npm exec --yes --package=@p4dx/deskmate@<exact-version> -- \
+  deskmate init . --org acme --target aws
+npm install
+npm exec deskmate -- check
+npm exec deskmate -- infra render
+npm exec deskmate -- doctor
+npm exec deskmate -- plan
+npm exec deskmate -- up --yes
+npm exec deskmate -- check --live
+```
+
+This package is published to npm as `@p4dx/deskmate`, with npm provenance attesting the
+building workflow. A release is one dispatch of `.github/workflows/release.yml` from
+`main`: it signs and pushes the first-party images, publishes the package pinning their
+digests, and then tags `v<version>` and creates the GitHub release with the resolved
+digests attached. The version comes from `cli/package.json`, which CI requires a pull
+request to bump whenever it changes what the package ships; a tag that already exists
+stops the release rather than moving. The checked-in image manifest is a sentinel that
+a deployment overrides with real digests. The packed-artifact test exercises the consumer
+path locally.
+
+The CLI deploys long-running Deskmate services; it is not the runtime. Docker runs
+them locally, Fly runs them as Fly apps with Fly Machines for agent computers, and AWS
+runs digest-pinned ARM64 tasks on ECS Fargate.
+
+## Deployment directory
+
+```text
+deskmate.config.jsonc
+package.json
+package-lock.json
+deployment.md
+.env.example
+.env
+slack-app-manifest.yml
+slack-sso-manifest.yml
+sandbox/
+  tools/<id>/tool.json
+  tools/<id>/<binary>
+  Dockerfile
+plugins/<name>/Dockerfile
+infra/
+```
+
+`deskmate.config.jsonc` is committed and contains no secret values. `.env` is ignored.
+`package.json` pins the CLI package at the exact version that scaffolded the
+directory — `contract: 1` is only the compatibility floor — so every checkout
+resolves the same interpreter; upgrade the pin deliberately.
+`cd` into it and the DEPLOY commands act on it; `--config` / `--env-file` / `--sandbox-dir` relocate
+a piece (e.g. several deployments sharing one `sandbox/`). `check` validates the config,
+computed secret names, tools, skills, and plugins without network access; `up`, `plan`, and
+`sandbox build` run the same checks first. `doctor` verifies external prerequisites read-only.
+`plan` renders the deployment; AWS mutation requires `up --yes`.
+
+On AWS, `up` snapshots the RDS instance under the deploy lease before its first
+mutation, names the snapshot after the deployment manifest it precedes, and
+records it in that manifest. `rollback` restores code and configuration only,
+so it prints that snapshot as the matching data restore point
+(`aws rds restore-db-instance-from-db-snapshot`). Pre-deploy snapshots are
+pruned to a bounded count; `aws.predeployDbSnapshot: false` opts out.
+
+`sandbox build` is a local validation build. `sandbox publish` pushes through the
+configured OCI registry, resolves the image and base digests, records the base pin in
+the config and the image pin in the config (docker/fly) or the durable AWS deployment
+manifest, syncs the durable deployment layer when core is reachable, and repoints a
+running Fly or AWS core. On AWS it requires `sandbox.backend: "fly"` and, before
+building anything, an existing deployment manifest and no `sandbox.image` override —
+that override only seeds the first `deskmate up` and must be removed afterwards. Every
+ordinary `up` also syncs the layer.
+
+Auto uses its built-in model classifier unless `deskmate.config.jsonc` declares one
+`securityScreen` proxy with a provider label, HTTPS endpoint, and `shadow` or
+`enforce` rollout. The proxy token is routed separately through
+`secretEnv.core.SECURITY_SCREEN_PROXY_TOKEN`.
+
+## Commands
+
+```text
+init [dir] [--org id] [--target docker|fly|aws]
+check [--json] [--live]
+doctor
+infra render|delete-task-definitions
+conformance [dir] [--static]
+plan
+up [--yes] [--build-from[=repo]] [--image-label label]
+slack render
+outputs [--json]
+proof scope-key <scope-id>
+secrets push [--from file]
+status
+logs [service] [-f] [--tail n]
+down [--purge]
+rollback [--to revision-or-sha]
+sandbox build [--from image] [--tag tag] [--dry-run]
+sandbox publish [--from image] [--app registry/repo] [--tag tag] [--dry-run]
+```
+
+All deploy commands accept `--config`, `--env-file`, and `--sandbox-dir`. `dev` remains
+the contributor worktree loop and is separate from the portable deployment contract.
+
+## Package contract
+
+The `@p4dx/deskmate/contract` export is the supported programmatic surface for
+conformance tests. It exposes the contract version, parsing/rendering
+functions, and provider ids without registering arbitrary runtime plugins.
+Incompatible directory
+changes increment the contract major; optional fields may be added within a
+major.
+
+The package has no runtime dependencies. It shells out to Docker with Buildx, Flyctl,
+the AWS CLI, and Git. Terraform is operator-run against the module generated by `init`.
