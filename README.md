@@ -13,7 +13,7 @@ Each person and each room has its own scoped memory, files, keychain view, permi
 crons, web apps, and durable sandbox.
 
 It's built with open source in mind. Pick your own harness and model and switch between
-them — every supported coding agent drives the same core, so a deployment
+them — OpenCode, Codex and Claude Code all drive the same core, so a deployment
 isn't tied to any single vendor.
 
 ## Features
@@ -47,7 +47,7 @@ flowchart LR
 
   subgraph CORE["Headless core"]
     API["API · identity · policy · scheduler"]
-    LOOP["Agent loop<br/>(pluggable coding agents)"]
+    LOOP["Agent loop<br/>(OpenCode, Codex, Claude Code)"]
     API <--> LOOP
   end
 
@@ -77,7 +77,7 @@ via one wiring file.
 
 ## Security and secrets
 
-Deskmate's approach follows local coding agents: the
+Deskmate's approach follows local coding agents like OpenCode, Codex, and Claude Code: the
 agent acts as the person it's working for, with their credentials and permissions, and
 everything it does is audited. An org picks one security posture, which narrower scopes
 can only tighten:
@@ -162,4 +162,4 @@ Deskmate is available under the [MIT License](./LICENSE).
 
 ---
 
-**Version:** v0.0.1
+**Version:** v0.0.2

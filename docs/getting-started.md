@@ -17,8 +17,8 @@ node cli/bin/deskmate.ts init deploy/layers/<org> --org <slug> --target <fly-or-
 
 Provider choice is part of initialization because it determines the config,
 secret rules, generated files, and teardown contract. Changing providers means
-initializing a new empty directory. `deskmate init` materializes `deployment.md`.
-Hand it to an agent. It confirms the
+initializing a new empty directory. `deskmate init` materializes `deployment.md` and
+`.codex/skills/deploy-deskmate/`. Hand that skill to an agent. It confirms the
 operator-owned account and billing before mutation, configures email-gated web
 onboarding first, optionally adds connectors and Slack, performs live checks,
 and returns the operational URLs. Sign-in defaults to the built-in `auth`

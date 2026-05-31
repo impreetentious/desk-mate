@@ -38,6 +38,7 @@ deskmate.config.jsonc
 package.json
 package-lock.json
 deployment.md
+.codex/skills/deploy-deskmate/
 .env.example
 .env
 slack-app-manifest.yml
@@ -45,6 +46,7 @@ slack-sso-manifest.yml
 sandbox/
   tools/<id>/tool.json
   tools/<id>/<binary>
+  skills/<id>/SKILL.md
   Dockerfile
 plugins/<name>/Dockerfile
 infra/
@@ -71,7 +73,7 @@ pruned to a bounded count; `aws.predeployDbSnapshot: false` opts out.
 configured OCI registry, resolves the image and base digests, records the base pin in
 the config and the image pin in the config (docker/fly) or the durable AWS deployment
 manifest, syncs the durable deployment layer when core is reachable, and repoints a
-running Fly or AWS core. On AWS it requires `sandbox.backend: "fly"` and, before
+running Fly or AWS core. On AWS it requires `sandbox.backend: "sprites"` and, before
 building anything, an existing deployment manifest and no `sandbox.image` override —
 that override only seeds the first `deskmate up` and must be removed afterwards. Every
 ordinary `up` also syncs the layer.

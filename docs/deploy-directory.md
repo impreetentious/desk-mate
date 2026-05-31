@@ -4,7 +4,7 @@ Contract v1 makes a Deskmate deployment a committed, portable directory. The `de
 
 ## Layout
 
-`package.json` pins the `@p4dx/deskmate` deployment engine at the exact version that scaffolded the directory, so the directory records which CLI interprets it rather than drifting with whatever version an operator has installed; `contract: 1` remains only the compatibility floor. `package-lock.json` records the installed artifact. `deskmate.config.jsonc` is the deployment config. `deployment.md` is a materialized package asset an operator can hand to an agent. `sandbox/` adds tools and skills to agent computers; `plugins/` adds services; `.env.example` documents the computed secret names; `.env` supplies local values and is never committed. `deskmate init` writes `slack-app-manifest.yml` for the optional Socket Mode bot. It also writes `slack-sso-manifest.yml` only when the portal is configured to use Slack OpenID. `deskmate slack render` refreshes the applicable manifests after `publicUrl` changes, and `deskmate outputs` returns their creation links and the web coordinates. `deskmate init --target aws` also vendors the reference `infra/` Terraform module and its derived `terraform.tfvars`; the copy belongs to the deployment after generation. Init never overwrites an existing deployment config.
+`package.json` pins the `@p4dx/deskmate` deployment engine at the exact version that scaffolded the directory, so the directory records which CLI interprets it rather than drifting with whatever version an operator has installed; `contract: 1` remains only the compatibility floor. `package-lock.json` records the installed artifact. `deskmate.config.jsonc` is the deployment config. `deployment.md` and `.codex/skills/deploy-deskmate/` are materialized package assets an operator can hand to an agent. `sandbox/` adds tools and skills to agent computers; `plugins/` adds services; `.env.example` documents the computed secret names; `.env` supplies local values and is never committed. `deskmate init` writes `slack-app-manifest.yml` for the optional Socket Mode bot. It also writes `slack-sso-manifest.yml` only when the portal is configured to use Slack OpenID. `deskmate slack render` refreshes the applicable manifests after `publicUrl` changes, and `deskmate outputs` returns their creation links and the web coordinates. `deskmate init --target aws` also vendors the reference `infra/` Terraform module and its derived `terraform.tfvars`; the copy belongs to the deployment after generation. Init never overwrites an existing deployment config.
 
 The sandbox layout is:
 
@@ -13,6 +13,7 @@ sandbox/
   Dockerfile
   tools/<id>/tool.json
   tools/<id>/<binary>
+  skills/<id>/SKILL.md
   skills/<id>/<text assets>
 ```
 
@@ -20,7 +21,7 @@ The Dockerfile is optional when every declared binary is present in its tool dir
 
 ## Configuration
 
-The root object requires `contract: 1`, `orgId`, `publicUrl`, `target`, and `services` including `core`. Docker and Fly also require `sandbox.app`. On AWS, `sandbox.backend: "fly"` boots the operator-published layer image in `sandbox.app`. Unknown contract majors fail closed. `target` is `docker`, `fly`, or `aws`.
+The root object requires `contract: 1`, `orgId`, `publicUrl`, `target`, and `services` including `core`. Docker and Fly also require `sandbox.app`. On AWS, `sandbox.backend: "sprites"` boots the operator-published layer image in `sandbox.app`. Unknown contract majors fail closed. `target` is `docker`, `fly`, or `aws`.
 
 Common optional fields select the model, plugins, extra skill directories, per-service non-secret environment values, image overrides, sandbox settings, and an external security screen. `sandbox.backend` selects the aws-target sandbox substrate (see above); `sandbox.image` is the immutable rootfs pin used at boot; `sandbox.baseImage` records the digest-pinned build input; `sandbox.env` is non-secret runtime environment; `sandbox.secretEnv` lists org-wide secret names whose values are forwarded to every sandbox. `securityScreen` contains `backend: "proxy"`, a lowercase provider label, an HTTPS endpoint, and a `shadow` or `enforce` rollout. Its presence requires `secretEnv.core.SECURITY_SCREEN_PROXY_TOKEN`; absence keeps Auto on the built-in model classifier.
 
@@ -105,7 +106,7 @@ Postgres stores create their tables lazily with idempotent DDL through the share
 
 | Requirement                                                                                |                          Docker |                             Fly |                                      AWS |
 | ------------------------------------------------------------------------------------------ | ------------------------------: | ------------------------------: | ---------------------------------------: |
-| Node 22 and `deskmate` CLI                                                                 |                             yes |                             yes |                                      yes |
+| Node 24 and `deskmate` CLI                                                                 |                             yes |                             yes |                                      yes |
 | Docker daemon                                                                              |                             yes |                      build path |                image transfer/build path |
 | Agent-computer image and credentials                                                       |      Fly app for real execution |        Fly app and scoped token |                 Fly app and scoped token |
 | Slack bot app created from generated manifest, bot token, app token                        |              when Slack enabled |              when Slack enabled |                       when Slack enabled |

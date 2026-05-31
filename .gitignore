@@ -10,6 +10,8 @@ data/
 *.tfstate
 *.tfstate.*
 .terraform/
+.claude/settings.local.json
+.gstack/
 .ci-instance/
 test/live-slack/out/
 .generated/
