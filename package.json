@@ -1,0 +1,72 @@
+{
+  "name": "deskmate",
+  "version": "0.0.3",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Headless core for the shared org agent (managed-agents architecture).",
+  "engines": {
+    "node": ">=24.15.0",
+    "npm": ">=11.10.0"
+  },
+  "scripts": {
+    "test": "node --experimental-test-module-mocks --test test/*.test.ts",
+    "test:root:shard": "node scripts/run-root-test-shard.mjs",
+    "test:root:shard:check": "node scripts/run-root-test-shard.mjs --check --shards 5",
+    "test:e2e": "node --test test/e2e/*.test.ts",
+    "test:all": "node --experimental-test-module-mocks --test 'test/**/*.test.ts'",
+    "deploy:fly-image": "flyctl deploy --remote-only --build-only --push --image-label latest --app \"${FLY_SANDBOX_APP_NAME:?Set FLY_SANDBOX_APP_NAME to your operator-owned app}\" -c fly/fly.toml --dockerfile fly/Dockerfile . --yes"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.2.136",
+    "@anthropic-ai/tokenizer": "^0.0.4",
+    "@aws-sdk/client-s3": "^3.1045.0",
+    "@aws-sdk/client-secrets-manager": "^3.1045.0",
+    "@aws-sdk/client-sts": "^3.1045.0",
+    "@fly/sprites": "0.0.1",
+    "@openai/codex": "0.129.0",
+    "@opencode-ai/plugin": "1.14.41",
+    "@opencode-ai/sdk": "1.14.41",
+    "@slack/bolt": "^4.7.2",
+    "@slack/socket-mode": "^2.0.7",
+    "@slack/web-api": "^7.15.2",
+    "croner": "^10.0.1",
+    "emoji-datasource": "^16.0.0",
+    "fastify": "^5.8.5",
+    "jose": "^6.2.3",
+    "lru-cache": "^11.3.6",
+    "opencode-ai": "1.14.41",
+    "pg": "^8.13.1",
+    "pg-boss": "^12.18.2",
+    "tar-stream": "^3.2.0",
+    "zod": "4.4.3"
+  },
+  "overrides": {
+    "@hono/node-server": "2.0.2",
+    "@fastify/ajv-compiler": {
+      "fast-uri": "3.1.2"
+    },
+    "ajv": {
+      "fast-uri": "3.1.2"
+    },
+    "brace-expansion": "5.0.6",
+    "fast-json-stringify": {
+      "fast-uri": "3.1.2"
+    },
+    "protobufjs": "7.5.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "@types/tar-stream": "^3.1.4",
+    "eslint": "^10.3.0",
+    "globals": "^17.6.0",
+    "knip": "^6.12.1",
+    "oxlint": "^1.63.0",
+    "prettier": "3.8.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.59.2"
+  }
+}
