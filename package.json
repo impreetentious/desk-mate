@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -17,7 +17,11 @@
     "test:all": "node --experimental-test-module-mocks --test 'test/**/*.test.ts'",
     "deploy:fly-image": "flyctl deploy --remote-only --build-only --push --image-label latest --app \"${FLY_SANDBOX_APP_NAME:?Set FLY_SANDBOX_APP_NAME to your operator-owned app}\" -c fly/fly.toml --dockerfile fly/Dockerfile . --yes",
     "check:version": "node scripts/check-version-coherence.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write --ignore-unknown .",
+    "format:check": "prettier --check --ignore-unknown .",
+    "lint": "eslint .",
+    "lint:ox": "oxlint --deny-warnings src plugins scripts cli test"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.2.138",

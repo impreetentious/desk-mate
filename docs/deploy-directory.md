@@ -104,16 +104,16 @@ Postgres stores create their tables lazily with idempotent DDL through the share
 
 ## Targets and prerequisites
 
-| Requirement                                                                                |                          Docker |                             Fly |                                      AWS |
-| ------------------------------------------------------------------------------------------ | ------------------------------: | ------------------------------: | ---------------------------------------: |
-| Node 24 and `deskmate` CLI                                                                 |                             yes |                             yes |                                      yes |
-| Docker daemon                                                                              |                             yes |                      build path |                image transfer/build path |
-| Agent-computer image and credentials                                                       |      Fly app for real execution |        Fly app and scoped token |                 Fly app and scoped token |
-| Slack bot app created from generated manifest, bot token, app token                        |              when Slack enabled |              when Slack enabled |                       when Slack enabled |
-| Admin email, verified sender, and a Resend key or SMTP credentials                         | with the built-in `auth` broker | with the built-in `auth` broker |          with the built-in `auth` broker |
-| Slack SSO app, client id/secret, team gate, and exact `<publicUrl>/auth/callback` redirect |            only with Slack OIDC |            only with Slack OIDC |                     only with Slack OIDC |
-| Postgres                                                                                   | local container or supplied DSN |       Fly Postgres/supplied DSN |                            Terraform RDS |
-| AWS credentials, ECS/ECR/RDS/ALB/Cloud Map, exact GitHub OIDC trust                        |                              no |                              no |                                      yes |
+| Requirement                                                                                |                          Docker |                             Fly |                             AWS |
+| ------------------------------------------------------------------------------------------ | ------------------------------: | ------------------------------: | ------------------------------: |
+| Node 24 and `deskmate` CLI                                                                 |                             yes |                             yes |                             yes |
+| Docker daemon                                                                              |                             yes |                      build path |       image transfer/build path |
+| Agent-computer image and credentials                                                       |      Fly app for real execution |        Fly app and scoped token |        Fly app and scoped token |
+| Slack bot app created from generated manifest, bot token, app token                        |              when Slack enabled |              when Slack enabled |              when Slack enabled |
+| Admin email, verified sender, and a Resend key or SMTP credentials                         | with the built-in `auth` broker | with the built-in `auth` broker | with the built-in `auth` broker |
+| Slack SSO app, client id/secret, team gate, and exact `<publicUrl>/auth/callback` redirect |            only with Slack OIDC |            only with Slack OIDC |            only with Slack OIDC |
+| Postgres                                                                                   | local container or supplied DSN |       Fly Postgres/supplied DSN |                   Terraform RDS |
+| AWS credentials, ECS/ECR/RDS/ALB/Cloud Map, exact GitHub OIDC trust                        |                              no |                              no |                             yes |
 
 `doctor` checks target resources read-only. When user-owned CI is requested, the AWS account must already have the account-level GitHub provider at `arn:aws:iam::<account-id>:oidc-provider/token.actions.githubusercontent.com`; check it with `aws iam get-open-id-connect-provider --open-id-connect-provider-arn <arn>` and, if absent, have an account administrator run `aws iam create-open-id-connect-provider --url https://token.actions.githubusercontent.com --client-id-list sts.amazonaws.com`. The AWS doctor verifies ECS, ECR, RDS, CloudFront-to-ALB routing, the deploy role and its exact operator-owned GitHub repository plus configured branch or environment trust, and required secret values. Environment-based trust must be paired with GitHub deployment-branch restrictions because its OIDC subject does not contain a branch. Fork pull requests cannot assume the deploy role. No workflow in the Deskmate source repository deploys a production stack.
 
