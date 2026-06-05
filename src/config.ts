@@ -222,7 +222,7 @@ export function orgScope(): string {
   return `org:${orgId()}`;
 }
 
-export const OPENCODE_RUNTIME_VERSION = "1.14.43";
+export const OPENCODE_RUNTIME_VERSION = "1.14.48";
 
 export const CONFIG_DEFAULTS = {
   port: 8080,
