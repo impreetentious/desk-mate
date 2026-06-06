@@ -1,0 +1,86 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  createMemoryConfigStore,
+  type PersistedApprovedHarnesses,
+  type PersistedBaseModel,
+} from "../src/resolution/config-store.ts";
+import { resolveRuntimeChoice, resolveRuntimeChoiceDurable } from "../src/harness/harness-router.ts";
+import { createMemoryMap } from "../src/persistence/durable-map.ts";
+
+const ORG = "org:default-org" as const;
+const PERSONAL = "personal:alice" as const;
+
+test("runtime selection is sparse, revisioned, and acknowledges a changed org default", async () => {
+  const config = createMemoryConfigStore("default-org");
+  config.setApprovedHarnesses(["claude", "codex", "claude"]);
+  config.setRuntimeSelection(ORG, { harnessId: "claude", modelId: "claude-opus-4-6" });
+  config.setRuntimeSelection(PERSONAL, { harnessId: "codex", modelId: "gpt-5.5" });
+  await config.flushScope(ORG);
+  await config.flushScope(PERSONAL);
+
+  assert.equal(config.getRuntimeSelection(ORG)?.revision, 1);
+  assert.equal(config.getRuntimeSelection(PERSONAL)?.orgRevision, 1);
+
+  config.setRuntimeSelection(ORG, { harnessId: "claude", modelId: "claude-opus-4-6" });
+  assert.equal(config.getRuntimeSelection(ORG)?.revision, 2);
+  assert.equal(config.getRuntimeSelection(PERSONAL)?.orgRevision, 1);
+
+  config.acknowledgeRuntimeSelection(PERSONAL);
+  assert.equal(config.getRuntimeSelection(PERSONAL)?.orgRevision, 2);
+
+  config.setRuntimeSelection(PERSONAL, null);
+  assert.equal(config.getRuntimeSelection(PERSONAL), null);
+});
+
+test("runtime resolution uses explicit choice, then scope, then org and rejects unapproved requests", () => {
+  const config = createMemoryConfigStore("default-org");
+  config.setApprovedHarnesses(["claude", "codex", "claude"]);
+  config.setRuntimeSelection(ORG, { harnessId: "claude", modelId: "claude-opus-4-6" });
+  config.setRuntimeSelection(PERSONAL, { harnessId: "codex", modelId: "gpt-5.5" });
+  const fallback = { harnessId: "claude" as const, modelId: "claude-opus-4-6" };
+
+  assert.deepEqual(resolveRuntimeChoice(config, ORG, PERSONAL, fallback), { harnessId: "codex", modelId: "gpt-5.5" });
+  assert.deepEqual(
+    resolveRuntimeChoice(config, ORG, PERSONAL, fallback, { harnessId: "claude", modelId: "claude-sonnet-4-6" }),
+    { harnessId: "claude", modelId: "claude-sonnet-4-6" },
+  );
+  assert.throws(
+    () => resolveRuntimeChoice(config, ORG, PERSONAL, fallback, { harnessId: "opencode", modelId: "claude-opus-4-6" }),
+    /not approved/,
+  );
+});
+
+test("runtime resolution falls back to the first approved harness when deployment defaults are not approved", () => {
+  const config = createMemoryConfigStore("default-org");
+  config.setApprovedHarnesses(["codex"]);
+  assert.deepEqual(resolveRuntimeChoice(config, ORG, PERSONAL, { harnessId: "claude", modelId: "claude-opus-4-6" }), {
+    harnessId: "codex",
+    modelId: "gpt-5.2",
+  });
+});
+
+test("runtime resolution reads approvals and selections from shared durable state on every turn", async () => {
+  const baseModels = createMemoryMap<PersistedBaseModel>();
+  const approvedHarnesses = createMemoryMap<PersistedApprovedHarnesses>();
+  const writer = createMemoryConfigStore("default-org", { baseModels, approvedHarnesses });
+  const reader = createMemoryConfigStore("default-org", { baseModels, approvedHarnesses });
+  const fallback = { harnessId: "claude" as const, modelId: "claude-opus-4-6" };
+
+  writer.setApprovedHarnesses(["claude"]);
+  await writer.setRuntimeSelectionLatest(ORG, fallback);
+  await writer.flushScope(ORG);
+  assert.deepEqual(await resolveRuntimeChoiceDurable(reader, ORG, PERSONAL, fallback), fallback);
+
+  writer.setApprovedHarnesses(["codex"]);
+  await writer.setRuntimeSelectionLatest(ORG, { harnessId: "codex", modelId: "gpt-5.5" });
+  await writer.flushScope(ORG);
+  assert.deepEqual(await resolveRuntimeChoiceDurable(reader, ORG, PERSONAL, fallback), {
+    harnessId: "codex",
+    modelId: "gpt-5.5",
+  });
+  await assert.rejects(
+    resolveRuntimeChoiceDurable(reader, ORG, PERSONAL, fallback, { harnessId: "claude", modelId: "claude-opus-4-6" }),
+    /not approved/,
+  );
+});
