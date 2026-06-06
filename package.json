@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -10,6 +10,8 @@
     "npm": ">=11.10.0"
   },
   "scripts": {
+    "start": "node --env-file-if-exists=.env src/index.ts",
+    "dev": "SHUTDOWN_DRAIN_MS=2000 node --env-file-if-exists=.env --watch src/index.ts",
     "test": "node --experimental-test-module-mocks --test test/*.test.ts",
     "test:root:shard": "node scripts/run-root-test-shard.mjs",
     "test:root:shard:check": "node scripts/run-root-test-shard.mjs --check --shards 5",
