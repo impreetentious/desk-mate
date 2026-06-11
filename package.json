@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -26,15 +26,15 @@
     "lint:ox": "oxlint --deny-warnings src plugins scripts cli test"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "0.3.145",
+    "@anthropic-ai/claude-agent-sdk": "0.3.149",
     "@anthropic-ai/tokenizer": "^0.0.4",
-    "@aws-sdk/client-s3": "^3.1050.0",
-    "@aws-sdk/client-secrets-manager": "^3.1050.0",
-    "@aws-sdk/client-sts": "^3.1050.0",
+    "@aws-sdk/client-s3": "^3.1052.0",
+    "@aws-sdk/client-secrets-manager": "^3.1052.0",
+    "@aws-sdk/client-sts": "^3.1052.0",
     "@fly/sprites": "0.0.1",
-    "@openai/codex": "0.132.0",
-    "@opencode-ai/plugin": "1.15.5",
-    "@opencode-ai/sdk": "1.15.5",
+    "@openai/codex": "0.133.0",
+    "@opencode-ai/plugin": "1.15.7",
+    "@opencode-ai/sdk": "1.15.7",
     "@slack/bolt": "^4.7.2",
     "@slack/socket-mode": "^2.0.7",
     "@slack/web-api": "^7.16.0",
@@ -43,7 +43,7 @@
     "fastify": "^5.8.5",
     "jose": "^6.2.3",
     "lru-cache": "^11.5.0",
-    "opencode-ai": "1.15.5",
+    "opencode-ai": "1.15.7",
     "pg": "^8.13.1",
     "pg-boss": "^12.18.2",
     "tar-stream": "^3.2.0",
@@ -61,7 +61,7 @@
     "fast-json-stringify": {
       "fast-uri": "3.1.2"
     },
-    "protobufjs": "7.6.0"
+    "protobufjs": "7.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -71,7 +71,7 @@
     "@types/tar-stream": "^3.1.4",
     "eslint": "^10.4.0",
     "globals": "^17.6.0",
-    "knip": "^6.14.1",
+    "knip": "^6.14.2",
     "oxlint": "^1.66.0",
     "prettier": "3.8.3",
     "typescript": "^5.8.2",
