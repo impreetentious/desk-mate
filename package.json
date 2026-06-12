@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -51,7 +51,7 @@
     "zod": "4.4.3"
   },
   "overrides": {
-    "@hono/node-server": "2.0.3",
+    "@hono/node-server": "2.0.4",
     "@fastify/ajv-compiler": {
       "fast-uri": "3.1.2"
     },
@@ -76,6 +76,6 @@
     "oxlint": "^1.66.0",
     "prettier": "3.8.3",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.59.4"
+    "typescript-eslint": "^8.60.0"
   }
 }
