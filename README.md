@@ -162,4 +162,4 @@ Deskmate is available under the [MIT License](./LICENSE).
 
 ---
 
-**Version:** v0.3.6
+**Version:** v0.3.7
