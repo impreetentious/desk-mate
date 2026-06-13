@@ -65,8 +65,8 @@ test("FAST_MODE_MODEL_IDS derives from the registry — the web-ui client reads 
 test("exposure is provider-key-aware: a model whose provider is unconfigured is not serviceable", () => {
   const noOpenai = { anthropic: true, openai: false, openrouter: false };
   assert.equal(modelServiceable("gpt-5.2", noOpenai), false);
-  assert.equal(modelServiceable("claude-opus-4-6", noOpenai), true);
-  assert.deepEqual(serviceableModelIds(["claude-opus-4-6", "gpt-5.2"], noOpenai), ["claude-opus-4-6"]);
+  assert.equal(modelServiceable("claude-opus-4-8", noOpenai), true);
+  assert.deepEqual(serviceableModelIds(["claude-opus-4-8", "gpt-5.2"], noOpenai), ["claude-opus-4-8"]);
 });
 
 test("provider-key gating applies only to key-authed harnesses (no over-hiding on CLI-auth harnesses)", () => {
@@ -98,7 +98,7 @@ test("web-turn gate refuses a keyless model cleanly, accepts it once the provide
 });
 
 test("fast-mode support is registry-driven", () => {
-  assert.equal(modelSupportsFastMode("claude-opus-4-6"), true);
+  assert.equal(modelSupportsFastMode("claude-opus-4-8"), true);
   assert.equal(modelSupportsFastMode("gpt-5.2"), false);
   assert.equal(modelSupportsFastMode(undefined), false);
   assert.equal(modelSupportsFastMode("nonexistent-model"), false);
@@ -128,13 +128,13 @@ test("unknown models are not silently accepted", () => {
 });
 
 test("native harnesses reject cross-provider pins and choose their own defaults", () => {
-  assert.equal(modelSupportedByHarness("claude-opus-4-6", "claude"), true);
+  assert.equal(modelSupportedByHarness("claude-opus-4-8", "claude"), true);
   assert.equal(modelSupportedByHarness("gpt-5.2", "claude"), false);
   assert.equal(modelSupportedByHarness("gpt-5.2", "codex"), true);
-  assert.equal(modelSupportedByHarness("claude-opus-4-6", "codex"), false);
+  assert.equal(modelSupportedByHarness("claude-opus-4-8", "codex"), false);
   assert.equal(modelSupportedByHarness("claude-future-9", "claude"), true);
   assert.equal(modelSupportedByHarness("gpt-future-9", "codex"), true);
-  assert.equal(defaultModelForHarness("codex", "claude-opus-4-6"), "gpt-5.2");
+  assert.equal(defaultModelForHarness("codex", "claude-opus-4-8"), "gpt-5.2");
 });
 
 test("the default base model follows the providers a deployment can actually bill", () => {
@@ -181,7 +181,7 @@ test("the curated catalog contains only current model families", () => {
     [
       "claude-mythos-preview",
       "claude-opus-4-7",
-      "claude-opus-4-6",
+      "claude-opus-4-8",
       "claude-sonnet-4-6",
       "claude-haiku-4-5",
       "gpt-5.2",
@@ -199,7 +199,7 @@ test("auxiliary models come from the configured base model's own provider", () =
     "claude-haiku-4-5",
     "the deployment default resolves an Anthropic auxiliary",
   );
-  assert.equal(auxiliaryModelFor("claude-opus-4-6"), "claude-haiku-4-5");
+  assert.equal(auxiliaryModelFor("claude-opus-4-8"), "claude-haiku-4-5");
   assert.equal(auxiliaryModelFor("claude-mythos-preview"), "claude-haiku-4-5");
   assert.equal(
     auxiliaryModelFor("gpt-5.2"),
@@ -270,13 +270,14 @@ test("catalog measurements are pinned: compaction reads these, and a hand edit m
   assert.deepEqual(measured, [
     ["claude-mythos-preview", "anthropic", 1_000_000, 128_000],
     ["claude-opus-4-7", "anthropic", 1_000_000, 128_000],
-    ["claude-opus-4-6", "anthropic", 1_000_000, 128_000],
+    ["claude-opus-4-8", "anthropic", 1_000_000, 128_000],
     ["claude-sonnet-4-6", "anthropic", 1_000_000, 128_000],
     ["claude-haiku-4-5", "anthropic", 200_000, 64_000],
     ["gpt-5.2", "openai", 1_050_000, 128_000],
     ["gpt-5.1", "openai", 1_050_000, 128_000],
     ["gpt-4.1-mini", "openai", 1_050_000, 128_000],
     ["openrouter/auto", "openrouter", 2_000_000, 4_096],
+    ["claude-opus-4-6", "anthropic", 1_000_000, 128_000],
   ]);
 });
 

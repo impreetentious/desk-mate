@@ -321,7 +321,7 @@ test("HARNESS=codex requires OPENAI_API_KEY: its CLI cannot do browser OAuth in 
 
 test("HARNESS=claude uses native Claude authentication and does not require an Anthropic key", () => {
   assert.doesNotThrow(() => loadConfig({ HARNESS: "claude" }));
-  assert.equal(loadConfig({ HARNESS: "claude", CLAUDE_MODEL: "claude-opus-4-6" }).claudeModel, "claude-opus-4-6");
+  assert.equal(loadConfig({ HARNESS: "claude", CLAUDE_MODEL: "claude-opus-4-8" }).claudeModel, "claude-opus-4-8");
 });
 
 test("SANDBOX_BACKEND: unset defaults to local (dev only); the secondary must be recognized and differ", () => {

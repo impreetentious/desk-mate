@@ -197,7 +197,7 @@ class FakeCore implements SlackCoreClient {
     return this.externalParticipants;
   }
   async effectiveModelName(): Promise<string> {
-    return "Claude Opus 4.6";
+    return "Claude Opus 4.8";
   }
   async stageBlob(bytes: Uint8Array): Promise<{ blobId: string; sizeBytes: number }> {
     return { blobId: "blob-1", sizeBytes: bytes.byteLength };
@@ -399,7 +399,7 @@ test("a human's DM sets the conversation header to the serving model + web surfa
     assert.deepEqual(f.client.topics, [
       {
         channel: "D1",
-        topic: "Model: Claude Opus 4.6 · https://claw.example.dev/contexts?scope=personal%3AU1",
+        topic: "Model: Claude Opus 4.8 · https://claw.example.dev/contexts?scope=personal%3AU1",
       },
     ]);
     await f.app.emitMessage({ channel: "D1", channel_type: "im", user: "U1", text: "again", ts: "100.2" });
@@ -420,7 +420,7 @@ test("a channel's description names the channel's own default model and project 
     assert.deepEqual(f.client.purposes, [
       {
         channel: "C1",
-        purpose: "Model: Claude Opus 4.6 · https://claw.example.dev/contexts?scope=channel%3AC1",
+        purpose: "Model: Claude Opus 4.8 · https://claw.example.dev/contexts?scope=channel%3AC1",
       },
     ]);
     assert.deepEqual(f.client.topics, [], "a channel's topic stays the members' own scratch space");

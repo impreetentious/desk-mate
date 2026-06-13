@@ -25,7 +25,7 @@ test("tape appends preserve order and round-trip payloads verbatim", async () =>
     timestamp: 2,
     api: "anthropic-messages",
     provider: "anthropic",
-    model: "claude-opus-4-6",
+    model: "claude-opus-4-8",
   };
   await store.appendTape(lease, {
     kind: "message",

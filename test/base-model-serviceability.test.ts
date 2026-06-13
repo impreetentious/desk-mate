@@ -63,7 +63,7 @@ test("base-model set rejects a model whose provider key is absent (would fail pr
     const ok = await fetch(`${srv.base}/v1/admin/scopes/org:default-org/base-model`, {
       method: "PUT",
       headers: ADMIN,
-      body: JSON.stringify({ modelId: "claude-opus-4-6" }),
+      body: JSON.stringify({ modelId: "claude-opus-4-8" }),
     });
     assert.equal(ok.status, 200, "an Anthropic model stays selectable when the Anthropic key is present");
   } finally {

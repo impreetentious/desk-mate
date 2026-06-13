@@ -571,31 +571,31 @@ test("postWithVerify: threaded post verifies via conversations.replies", async (
 
 test("surfaceHeaderText composes model + project link and degrades gracefully", () => {
   assert.equal(
-    surfaceHeaderText("Claude Opus 4.6", "https://claw.acme.dev/contexts?scope=channel%3AC1"),
-    "Model: Claude Opus 4.6 · https://claw.acme.dev/contexts?scope=channel%3AC1",
+    surfaceHeaderText("Claude Opus 4.8", "https://claw.acme.dev/contexts?scope=channel%3AC1"),
+    "Model: Claude Opus 4.8 · https://claw.acme.dev/contexts?scope=channel%3AC1",
   );
-  assert.equal(surfaceHeaderText("Claude Opus 4.6", undefined), "Model: Claude Opus 4.6");
+  assert.equal(surfaceHeaderText("Claude Opus 4.8", undefined), "Model: Claude Opus 4.8");
   assert.equal(surfaceHeaderText(undefined, "https://claw.acme.dev"), "https://claw.acme.dev");
   assert.equal(surfaceHeaderText("  ", "  "), undefined);
 });
 
 test("headerUpdate rewrites only an empty or self-authored header", () => {
   const BOT = "U0BOT";
-  const desired = "Model: Claude Opus 4.6 · https://claw.acme.dev";
+  const desired = "Model: Claude Opus 4.8 · https://claw.acme.dev";
   assert.equal(headerUpdate(undefined, BOT, desired), "set");
   assert.equal(headerUpdate({ value: "" }, BOT, desired), "set");
   assert.equal(headerUpdate({ value: "Model: Claude Sonnet 4.6", creator: BOT }, BOT, desired), "set");
   assert.equal(headerUpdate({ value: desired, creator: BOT }, BOT, desired), "skip");
   assert.equal(headerUpdate({ value: "my own notes", creator: "U0HUMAN" }, BOT, desired), "skip");
   assert.equal(
-    headerUpdate({ value: "Model: Claude Opus 4.6 · <https://claw.acme.dev>", creator: BOT }, BOT, desired),
+    headerUpdate({ value: "Model: Claude Opus 4.8 · <https://claw.acme.dev>", creator: BOT }, BOT, desired),
     "skip",
   );
 });
 
 function headerHarness(
   existing?: { value?: string; creator?: string },
-  model = "Claude Opus 4.6",
+  model = "Claude Opus 4.8",
   kind: "dm" | "channel" = "dm",
 ) {
   const calls = { info: 0, set: 0 };
@@ -639,7 +639,7 @@ test("surface header ensurer writes the header once, then goes quiet", async () 
   assert.equal(h.calls.set, 1);
   assert.equal(
     h.read()?.value,
-    "Model: Claude Opus 4.6 · https://claw.acme.dev/contexts?scope=personal%3Ajosh%40acme.dev",
+    "Model: Claude Opus 4.8 · https://claw.acme.dev/contexts?scope=personal%3Ajosh%40acme.dev",
   );
   h.ensure(h.client, "D1");
   await h.flush();
@@ -664,7 +664,7 @@ test("surface header ensurer collapses a burst on one channel into a single writ
     },
   };
   const ensure = createSurfaceHeaderEnsurer({
-    effectiveModelName: async () => "Claude Opus 4.6",
+    effectiveModelName: async () => "Claude Opus 4.8",
     webUiPublicUrl: "https://claw.acme.dev",
     ids: { botUserId: "U0BOT" },
   });
@@ -679,7 +679,7 @@ test("surface header ensurer caps its per-channel memo", async () => {
     conversations: { info: async () => ({ channel: {} }), setTopic: async () => ({}) },
   };
   const ensure = createSurfaceHeaderEnsurer({
-    effectiveModelName: async () => "Claude Opus 4.6",
+    effectiveModelName: async () => "Claude Opus 4.8",
     webUiPublicUrl: "https://claw.acme.dev",
     ids: { botUserId: "U0BOT" },
     maxTracked: 3,
@@ -704,19 +704,19 @@ test("surface header ensurer caps its per-channel memo", async () => {
 });
 
 test("surface header ensurer writes a channel's description, not its topic", async () => {
-  const h = headerHarness(undefined, "Claude Opus 4.6", "channel");
+  const h = headerHarness(undefined, "Claude Opus 4.8", "channel");
   h.ensure(h.client, "C1");
   await h.flush();
   assert.equal(h.calls.set, 1);
   assert.equal(
     h.read()?.value,
-    "Model: Claude Opus 4.6 · https://claw.acme.dev/contexts?scope=channel%3AC1",
+    "Model: Claude Opus 4.8 · https://claw.acme.dev/contexts?scope=channel%3AC1",
     "a channel shows ITS scope's default model and links to ITS project page",
   );
 });
 
 test("surface header ensurer never clobbers a human-written channel description", async () => {
-  const h = headerHarness({ value: "Where we plan the launch", creator: "U0HUMAN" }, "Claude Opus 4.6", "channel");
+  const h = headerHarness({ value: "Where we plan the launch", creator: "U0HUMAN" }, "Claude Opus 4.8", "channel");
   h.ensure(h.client, "C1");
   await h.flush();
   assert.equal(h.calls.set, 0, "a description a human wrote is theirs");

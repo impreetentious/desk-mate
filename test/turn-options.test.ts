@@ -24,23 +24,23 @@ test("explicit turn model options win over triggered defaults", () => {
 
 test("web model controls are bounded by admin configuration", () => {
   assert.equal(
-    validateWebTurnModelOptions({ model: "claude-sonnet-4-6" }, ["claude-opus-4-6"]),
+    validateWebTurnModelOptions({ model: "claude-sonnet-4-6" }, ["claude-opus-4-8"]),
     "that model is not enabled for the web UI",
   );
   assert.equal(validateWebTurnModelOptions({ thinkingLevel: "infinite" }, null), "unsupported thinking level");
-  assert.equal(validateWebTurnModelOptions({ model: "claude-opus-4-6", thinkingLevel: "high" }, null), null);
+  assert.equal(validateWebTurnModelOptions({ model: "claude-opus-4-8", thinkingLevel: "high" }, null), null);
 });
 
 test("a resolved scope override outside the configured picker is refused, the org default is not", () => {
   const picker = ["claude-sonnet-4-6"];
   assert.equal(
-    webTurnRuntimeModelRefusal("claude-opus-4-6", "claude-sonnet-4-6", picker),
+    webTurnRuntimeModelRefusal("claude-opus-4-8", "claude-sonnet-4-6", picker),
     "that model is not enabled for the web UI",
   );
-  assert.equal(webTurnRuntimeModelRefusal("claude-sonnet-4-6", "claude-opus-4-6", picker), null);
-  assert.equal(webTurnRuntimeModelRefusal("claude-opus-4-6", "claude-opus-4-6", picker), null);
-  assert.equal(webTurnRuntimeModelRefusal("claude-opus-4-6", "claude-sonnet-4-6", null), null);
-  assert.equal(webTurnRuntimeModelRefusal("claude-opus-4-6", "claude-sonnet-4-6", []), null);
+  assert.equal(webTurnRuntimeModelRefusal("claude-sonnet-4-6", "claude-opus-4-8", picker), null);
+  assert.equal(webTurnRuntimeModelRefusal("claude-opus-4-8", "claude-opus-4-8", picker), null);
+  assert.equal(webTurnRuntimeModelRefusal("claude-opus-4-8", "claude-sonnet-4-6", null), null);
+  assert.equal(webTurnRuntimeModelRefusal("claude-opus-4-8", "claude-sonnet-4-6", []), null);
 });
 
 test("interactive turns do not force model options", () => {

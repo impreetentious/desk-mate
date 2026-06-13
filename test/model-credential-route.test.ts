@@ -64,7 +64,7 @@ test("admin model credentials are encrypted, write-only, live, and removable", a
       models: [
         { id: "claude-mythos-preview", name: "Claude Mythos Preview", provider: "anthropic" },
         { id: "claude-opus-4-7", name: "Claude Opus 4.7", provider: "anthropic" },
-        { id: "claude-opus-4-6", name: "Claude Opus 4.6", provider: "anthropic" },
+        { id: "claude-opus-4-8", name: "Claude Opus 4.8", provider: "anthropic" },
         { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "anthropic" },
         { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", provider: "anthropic" },
         { id: "gpt-5.2", name: "GPT-5.2", provider: "openai" },
@@ -429,7 +429,7 @@ test("admin model credentials survive a second app instance on the same durable 
 test("a stored scope override outside the configured picker refuses web turns; the org default stays exempt", async () => {
   const srv = start({ anthropicApiKey: "deployment-anthropic-key" });
   try {
-    srv.built.config.setRuntimeSelection("org:default-org", { harnessId: "mock", modelId: "claude-opus-4-6" });
+    srv.built.config.setRuntimeSelection("org:default-org", { harnessId: "mock", modelId: "claude-opus-4-8" });
     srv.built.config.setWebuiModels("org:default-org", ["claude-sonnet-4-6"]);
     await srv.built.config.flushScope("org:default-org");
     await srv.built.config.setRuntimeSelectionLatest("personal:alice", {
@@ -450,7 +450,7 @@ test("a stored scope override outside the configured picker refuses web turns; t
     assert.equal(stale.status, "refused");
     assert.match(stale.reason ?? "", /not enabled for the web UI/);
 
-    const explicitOrgDefault = await turn("web:alice:org-default", "claude-opus-4-6");
+    const explicitOrgDefault = await turn("web:alice:org-default", "claude-opus-4-8");
     assert.equal(explicitOrgDefault.status, "queued");
 
     await srv.built.config.setRuntimeSelectionLatest("personal:alice", null);
