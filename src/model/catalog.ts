@@ -29,8 +29,8 @@ export interface ModelEntry extends Model {
 
 export const MODEL_REGISTRY: readonly ModelEntry[] = [
   {
-    id: "claude-mythos-preview",
-    name: "Claude Mythos Preview",
+    id: "claude-fable-5",
+    name: "Claude Fable 5",
     provider: "anthropic",
     contextWindow: 1_000_000,
     maxTokens: 128_000,

@@ -62,7 +62,7 @@ test("admin model credentials are encrypted, write-only, live, and removable", a
         { provider: "openrouter", configured: false, source: "absent" },
       ],
       models: [
-        { id: "claude-mythos-preview", name: "Claude Mythos Preview", provider: "anthropic" },
+        { id: "claude-fable-5", name: "Claude Fable 5", provider: "anthropic" },
         { id: "claude-opus-4-7", name: "Claude Opus 4.7", provider: "anthropic" },
         { id: "claude-opus-4-8", name: "Claude Opus 4.8", provider: "anthropic" },
         { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "anthropic" },

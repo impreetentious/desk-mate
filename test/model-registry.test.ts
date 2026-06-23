@@ -179,7 +179,7 @@ test("the curated catalog contains only current model families", () => {
   assert.deepEqual(
     SELECTABLE_BASE_MODELS.map((model) => model.id),
     [
-      "claude-mythos-preview",
+      "claude-fable-5",
       "claude-opus-4-7",
       "claude-opus-4-8",
       "claude-sonnet-4-6",
@@ -200,7 +200,7 @@ test("auxiliary models come from the configured base model's own provider", () =
     "the deployment default resolves an Anthropic auxiliary",
   );
   assert.equal(auxiliaryModelFor("claude-opus-4-8"), "claude-haiku-4-5");
-  assert.equal(auxiliaryModelFor("claude-mythos-preview"), "claude-haiku-4-5");
+  assert.equal(auxiliaryModelFor("claude-fable-5"), "claude-haiku-4-5");
   assert.equal(
     auxiliaryModelFor("gpt-5.2"),
     "gpt-4.1-mini",
@@ -253,8 +253,8 @@ test("an auxiliary is never less serviceable than the base model it was derived 
 });
 
 test("context token budget is half of each model's real input room", () => {
-  assert.equal(getRequiredModel("claude-mythos-preview").contextWindow, 1_000_000);
-  assert.equal(contextTokenBudgetForModel("claude-mythos-preview"), Math.floor((1_000_000 - 128_000) * 0.5));
+  assert.equal(getRequiredModel("claude-fable-5").contextWindow, 1_000_000);
+  assert.equal(contextTokenBudgetForModel("claude-fable-5"), Math.floor((1_000_000 - 128_000) * 0.5));
   const sol = contextTokenBudgetForModel("gpt-5.2");
   assert.equal(sol, Math.floor((1_050_000 - 128_000) * 0.5));
   assert.ok(sol !== undefined && sol < 1_050_000 * 0.5, "budget stays below half the window");
@@ -268,7 +268,7 @@ test("context token budget is half of each model's real input room", () => {
 test("catalog measurements are pinned: compaction reads these, and a hand edit must not move them", () => {
   const measured = MODEL_REGISTRY.map((m) => [m.id, m.provider, m.contextWindow, m.maxTokens] as const);
   assert.deepEqual(measured, [
-    ["claude-mythos-preview", "anthropic", 1_000_000, 128_000],
+    ["claude-fable-5", "anthropic", 1_000_000, 128_000],
     ["claude-opus-4-7", "anthropic", 1_000_000, 128_000],
     ["claude-opus-4-8", "anthropic", 1_000_000, 128_000],
     ["claude-sonnet-4-6", "anthropic", 1_000_000, 128_000],
