@@ -23,7 +23,7 @@ import { reconstructMessagesFromHistory } from "./replay.ts";
 import { parseSecurityScreenVerdict, SECURITY_SCREEN_SYSTEM_PROMPT } from "../security/security-posture.ts";
 import { countTokens } from "../util/tokens.ts";
 
-const OPENCODE_VERSION = "1.16.2";
+const OPENCODE_VERSION = "1.17.3";
 const OPENCODE_IDLE_WAIT_MS = 30 * 60_000;
 export const OPENCODE_STARTUP_TIMEOUT_MS = 90_000;
 
