@@ -30,9 +30,9 @@ export interface Config {
   databaseUrl?: string;
   harness: "mock" | "opencode" | "codex" | "claude";
   securityPosture: SecurityPosture;
-  sandboxBackend: "local" | "sprites";
-  sandboxSecondaryBackend?: "local" | "sprites";
-  deployProvider: "docker";
+  sandboxBackend: "aws" | "local" | "sprites";
+  sandboxSecondaryBackend?: "aws" | "local" | "sprites";
+  deployProvider: "docker" | "aws";
   egressServiceHosts?: string[];
   brandingDefault?: { accent?: string; mark?: string; selfLabel?: string };
   modelId?: string;
@@ -135,8 +135,10 @@ export interface Config {
   sharedOwnerAuthIsolation: boolean;
   surfaceDebugFooter: boolean;
   eagerProvisionEnabled: boolean;
+  awsSandbox: AwsSandboxEnv;
   localSandbox: LocalSandboxEnv;
   spritesSandbox: SpritesSandboxEnv;
+  awsDeploy: AwsDeployEnv;
 }
 
 export function configuredModelForHarness(config: Config, harness: string): string | undefined {
@@ -156,6 +158,81 @@ export function providerKeysPresent(config: Config): ModelProviderAvailability {
 
 export function baseModelProviders(config: Config): ModelProviderAvailability | undefined {
   return config.modelProvider ? onlyProvider(config.modelProvider) : undefined;
+}
+
+interface AwsSandboxEnv {
+  region: string;
+  profile?: string;
+  imageIdentifier: string;
+  imageVersion?: string;
+  executionRoleArn?: string;
+  ingressConnectorArns?: string[];
+  egressConnectorArns?: string[];
+  s3Bucket?: string;
+  s3Prefix?: string;
+  agentPort?: number;
+  maxIdleDurationSeconds?: number;
+  suspendedDurationSeconds?: number;
+  maximumDurationInSeconds?: number;
+  rotateAfterSeconds?: number;
+  snapshotIntervalMs?: number;
+  defaultTimeoutSec?: number;
+  cpus?: number;
+  memoryMb?: number;
+  diskGb?: number;
+}
+
+function awsSandboxEnv(env: NodeJS.ProcessEnv): AwsSandboxEnv {
+  const csv = (s: string | undefined): string[] | undefined =>
+    s
+      ? s
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean)
+      : undefined;
+  const ingress = csv(env.AWS_SANDBOX_INGRESS_CONNECTORS);
+  const egress = csv(env.AWS_SANDBOX_EGRESS_CONNECTORS);
+  return {
+    region: env.AWS_SANDBOX_REGION ?? env.AWS_REGION ?? env.AWS_DEFAULT_REGION ?? "us-west-2",
+    ...(env.AWS_SANDBOX_PROFILE ? { profile: env.AWS_SANDBOX_PROFILE } : {}),
+    imageIdentifier: env.AWS_SANDBOX_IMAGE ?? "deskmate-microvm-sandbox",
+    ...(env.AWS_SANDBOX_IMAGE_VERSION ? { imageVersion: env.AWS_SANDBOX_IMAGE_VERSION } : {}),
+    ...(env.AWS_SANDBOX_EXEC_ROLE_ARN ? { executionRoleArn: env.AWS_SANDBOX_EXEC_ROLE_ARN } : {}),
+    ...(ingress ? { ingressConnectorArns: ingress } : {}),
+    ...(egress ? { egressConnectorArns: egress } : {}),
+    ...(env.AWS_SANDBOX_S3_BUCKET ? { s3Bucket: env.AWS_SANDBOX_S3_BUCKET } : {}),
+    ...(env.AWS_SANDBOX_S3_PREFIX ? { s3Prefix: env.AWS_SANDBOX_S3_PREFIX } : {}),
+    ...(numEnvStrict("AWS_SANDBOX_AGENT_PORT", env.AWS_SANDBOX_AGENT_PORT) !== undefined
+      ? { agentPort: numEnvStrict("AWS_SANDBOX_AGENT_PORT", env.AWS_SANDBOX_AGENT_PORT) }
+      : {}),
+    ...(numEnvStrict("AWS_SANDBOX_MAX_IDLE_SEC", env.AWS_SANDBOX_MAX_IDLE_SEC) !== undefined
+      ? { maxIdleDurationSeconds: numEnvStrict("AWS_SANDBOX_MAX_IDLE_SEC", env.AWS_SANDBOX_MAX_IDLE_SEC) }
+      : {}),
+    ...(numEnvStrict("AWS_SANDBOX_SUSPENDED_SEC", env.AWS_SANDBOX_SUSPENDED_SEC) !== undefined
+      ? { suspendedDurationSeconds: numEnvStrict("AWS_SANDBOX_SUSPENDED_SEC", env.AWS_SANDBOX_SUSPENDED_SEC) }
+      : {}),
+    ...(numEnvStrict("AWS_SANDBOX_MAX_DURATION_SEC", env.AWS_SANDBOX_MAX_DURATION_SEC) !== undefined
+      ? { maximumDurationInSeconds: numEnvStrict("AWS_SANDBOX_MAX_DURATION_SEC", env.AWS_SANDBOX_MAX_DURATION_SEC) }
+      : {}),
+    ...(numEnvStrict("AWS_SANDBOX_ROTATE_AFTER_SEC", env.AWS_SANDBOX_ROTATE_AFTER_SEC) !== undefined
+      ? { rotateAfterSeconds: numEnvStrict("AWS_SANDBOX_ROTATE_AFTER_SEC", env.AWS_SANDBOX_ROTATE_AFTER_SEC) }
+      : {}),
+    ...(numEnvStrict("AWS_SANDBOX_SNAPSHOT_INTERVAL_MS", env.AWS_SANDBOX_SNAPSHOT_INTERVAL_MS) !== undefined
+      ? { snapshotIntervalMs: numEnvStrict("AWS_SANDBOX_SNAPSHOT_INTERVAL_MS", env.AWS_SANDBOX_SNAPSHOT_INTERVAL_MS) }
+      : {}),
+    ...(numEnvStrict("SANDBOX_TIMEOUT_SEC", env.SANDBOX_TIMEOUT_SEC) !== undefined
+      ? { defaultTimeoutSec: numEnvStrict("SANDBOX_TIMEOUT_SEC", env.SANDBOX_TIMEOUT_SEC) }
+      : {}),
+    ...(numEnvStrict("AWS_SANDBOX_CPUS", env.AWS_SANDBOX_CPUS) !== undefined
+      ? { cpus: numEnvStrict("AWS_SANDBOX_CPUS", env.AWS_SANDBOX_CPUS) }
+      : {}),
+    ...(numEnvStrict("AWS_SANDBOX_MEMORY_MB", env.AWS_SANDBOX_MEMORY_MB) !== undefined
+      ? { memoryMb: numEnvStrict("AWS_SANDBOX_MEMORY_MB", env.AWS_SANDBOX_MEMORY_MB) }
+      : {}),
+    ...(numEnvStrict("AWS_SANDBOX_DISK_GB", env.AWS_SANDBOX_DISK_GB) !== undefined
+      ? { diskGb: numEnvStrict("AWS_SANDBOX_DISK_GB", env.AWS_SANDBOX_DISK_GB) }
+      : {}),
+  };
 }
 
 interface LocalSandboxEnv {
@@ -202,6 +279,29 @@ function spritesSandboxEnv(env: NodeJS.ProcessEnv): SpritesSandboxEnv {
   };
 }
 
+interface AwsDeployEnv {
+  region: string;
+  profile?: string;
+  imageIdentifier: string;
+  imageVersion?: string;
+  executionRoleArn?: string;
+  ingressConnectorArns?: string[];
+  egressConnectorArns?: string[];
+  agentPort?: number;
+  appPort?: number;
+  maximumDurationInSeconds?: number;
+  rotateAfterSeconds?: number;
+  maxIdleDurationSeconds?: number;
+  suspendedDurationSeconds?: number;
+  appsDomain?: string;
+  gateSecret?: string;
+  tokenTtlMinutes?: number;
+  dataBucket?: string;
+  dataPrefix?: string;
+  snapshotIntervalMs?: number;
+  dataRoleArn?: string;
+}
+
 function deployAppsEnv(env: NodeJS.ProcessEnv): { deployAppsSessionSecret?: string; deployAppsLoginUrl?: string } {
   const secret = env.DEPLOY_APPS_SESSION_SECRET;
   const loginUrl = env.DEPLOY_APPS_LOGIN_URL;
@@ -210,6 +310,61 @@ function deployAppsEnv(env: NodeJS.ProcessEnv): { deployAppsSessionSecret?: stri
   }
   if (!secret || !loginUrl) return {};
   return { deployAppsSessionSecret: secret, deployAppsLoginUrl: loginUrl.replace(/\/$/, "") };
+}
+
+function awsDeployEnv(env: NodeJS.ProcessEnv): AwsDeployEnv {
+  const csv = (s: string | undefined): string[] | undefined =>
+    s
+      ? s
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean)
+      : undefined;
+  const ingress = csv(env.AWS_DEPLOY_INGRESS_CONNECTORS);
+  const egress = csv(env.AWS_DEPLOY_EGRESS_CONNECTORS);
+  return {
+    region: env.AWS_DEPLOY_REGION ?? env.AWS_REGION ?? env.AWS_DEFAULT_REGION ?? "us-west-2",
+    ...(env.AWS_DEPLOY_PROFILE ? { profile: env.AWS_DEPLOY_PROFILE } : {}),
+    imageIdentifier: env.AWS_DEPLOY_IMAGE ?? "deskmate-microvm-sandbox",
+    ...(env.AWS_DEPLOY_IMAGE_VERSION ? { imageVersion: env.AWS_DEPLOY_IMAGE_VERSION } : {}),
+    ...(env.AWS_DEPLOY_EXEC_ROLE_ARN ? { executionRoleArn: env.AWS_DEPLOY_EXEC_ROLE_ARN } : {}),
+    ...(ingress ? { ingressConnectorArns: ingress } : {}),
+    ...(egress ? { egressConnectorArns: egress } : {}),
+    ...(numEnvStrict("AWS_DEPLOY_AGENT_PORT", env.AWS_DEPLOY_AGENT_PORT) !== undefined
+      ? { agentPort: numEnvStrict("AWS_DEPLOY_AGENT_PORT", env.AWS_DEPLOY_AGENT_PORT) }
+      : {}),
+    ...(numEnvStrict("AWS_DEPLOY_APP_PORT", env.AWS_DEPLOY_APP_PORT) !== undefined
+      ? { appPort: numEnvStrict("AWS_DEPLOY_APP_PORT", env.AWS_DEPLOY_APP_PORT) }
+      : {}),
+    ...(numEnvStrict("AWS_DEPLOY_MAX_DURATION_SEC", env.AWS_DEPLOY_MAX_DURATION_SEC) !== undefined
+      ? { maximumDurationInSeconds: numEnvStrict("AWS_DEPLOY_MAX_DURATION_SEC", env.AWS_DEPLOY_MAX_DURATION_SEC) }
+      : {}),
+    ...(numEnvStrict("AWS_DEPLOY_ROTATE_AFTER_SEC", env.AWS_DEPLOY_ROTATE_AFTER_SEC) !== undefined
+      ? { rotateAfterSeconds: numEnvStrict("AWS_DEPLOY_ROTATE_AFTER_SEC", env.AWS_DEPLOY_ROTATE_AFTER_SEC) }
+      : {}),
+    ...(numEnvStrict("AWS_DEPLOY_MAX_IDLE_SEC", env.AWS_DEPLOY_MAX_IDLE_SEC) !== undefined
+      ? { maxIdleDurationSeconds: numEnvStrict("AWS_DEPLOY_MAX_IDLE_SEC", env.AWS_DEPLOY_MAX_IDLE_SEC) }
+      : {}),
+    ...(numEnvStrict("AWS_DEPLOY_SUSPENDED_SEC", env.AWS_DEPLOY_SUSPENDED_SEC) !== undefined
+      ? { suspendedDurationSeconds: numEnvStrict("AWS_DEPLOY_SUSPENDED_SEC", env.AWS_DEPLOY_SUSPENDED_SEC) }
+      : {}),
+    ...(env.AWS_DEPLOY_APPS_DOMAIN ? { appsDomain: env.AWS_DEPLOY_APPS_DOMAIN } : {}),
+    ...(env.AWS_DEPLOY_GATE_SECRET ? { gateSecret: env.AWS_DEPLOY_GATE_SECRET } : {}),
+    ...(numEnvStrict("AWS_DEPLOY_TOKEN_TTL_MIN", env.AWS_DEPLOY_TOKEN_TTL_MIN) !== undefined
+      ? { tokenTtlMinutes: numEnvStrict("AWS_DEPLOY_TOKEN_TTL_MIN", env.AWS_DEPLOY_TOKEN_TTL_MIN) }
+      : {}),
+    ...(env.AWS_DEPLOY_DATA_BUCKET ? { dataBucket: env.AWS_DEPLOY_DATA_BUCKET } : {}),
+    ...(env.AWS_DEPLOY_DATA_PREFIX ? { dataPrefix: env.AWS_DEPLOY_DATA_PREFIX } : {}),
+    ...(env.AWS_DEPLOY_DATA_ROLE_ARN ? { dataRoleArn: env.AWS_DEPLOY_DATA_ROLE_ARN } : {}),
+    ...(numEnvStrict("AWS_DEPLOY_SNAPSHOT_INTERVAL_MS", env.AWS_DEPLOY_SNAPSHOT_INTERVAL_MS) !== undefined
+      ? {
+          snapshotIntervalMs: Math.max(
+            60_000,
+            numEnvStrict("AWS_DEPLOY_SNAPSHOT_INTERVAL_MS", env.AWS_DEPLOY_SNAPSHOT_INTERVAL_MS)!,
+          ),
+        }
+      : {}),
+  };
 }
 
 const DEFAULT_ORG_ID = "default-org";
@@ -222,7 +377,7 @@ export function orgScope(): string {
   return `org:${orgId()}`;
 }
 
-export const OPENCODE_RUNTIME_VERSION = "1.17.3";
+export const OPENCODE_RUNTIME_VERSION = "1.17.9";
 
 export const CONFIG_DEFAULTS = {
   port: 8080,
@@ -316,8 +471,8 @@ function harnessEnvStrict(value: string | undefined): Config["harness"] {
 function sandboxBackendEnvStrict(value: string | undefined, name = "SANDBOX_BACKEND"): Config["sandboxBackend"] {
   if (value === undefined || value.trim() === "") return "local";
   const backend = value.trim();
-  if (backend === "local" || backend === "sprites") return backend;
-  throw new Error(`${name}=${JSON.stringify(value)} is not recognized — use local or sprites, or unset it.`);
+  if (backend === "aws" || backend === "local" || backend === "sprites") return backend;
+  throw new Error(`${name}=${JSON.stringify(value)} is not recognized — use aws, local, or sprites, or unset it.`);
 }
 
 function secretsBackendEnvStrict(value: string | undefined, prefix: string): Config["secretsBackend"] {
@@ -419,7 +574,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
   const dataDir = resolve(env.DATA_DIR ?? "./data");
   if (env.NODE_ENV === "production" && !env.SANDBOX_BACKEND?.trim()) {
-    throw new Error("SANDBOX_BACKEND must be set explicitly in production — use sprites or local.");
+    throw new Error("SANDBOX_BACKEND must be set explicitly in production — use sprites, aws, or local.");
   }
   const sandboxBackend = sandboxBackendEnvStrict(env.SANDBOX_BACKEND);
   const secondaryRaw = env.SANDBOX_SECONDARY_BACKEND?.trim();
@@ -475,7 +630,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
   const publicApiUrl = env.PUBLIC_API_URL ?? env.AGENT_API_URL;
   const publicUrl = env.PUBLIC_WEB_URL ?? publicApiUrl;
-  const deployProvider = "docker" as const;
+  const deployProvider: "aws" | "docker" = env.DEPLOY_PROVIDER === "aws" ? "aws" : "docker";
   let runStore: "memory" | "postgres" = env.SESSION_STORE === "postgres" ? "postgres" : "memory";
   if (env.RUN_STORE === "memory" || env.RUN_STORE === "postgres") runStore = env.RUN_STORE;
   const codexProcessEnv = Object.fromEntries(
@@ -687,7 +842,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     sharedOwnerAuthIsolation: boolEnvStrict("SHARED_OWNER_AUTH_ISOLATION", env.SHARED_OWNER_AUTH_ISOLATION) ?? false,
     surfaceDebugFooter: boolEnvStrict("SURFACE_DEBUG_FOOTER", env.SURFACE_DEBUG_FOOTER) ?? false,
     eagerProvisionEnabled: boolEnvStrict("EAGER_PROVISION", env.EAGER_PROVISION) ?? false,
+    awsSandbox: awsSandboxEnv(env),
     localSandbox: localSandboxEnv(env),
     spritesSandbox: spritesSandboxEnv(env),
+    awsDeploy: awsDeployEnv(env),
   };
 }

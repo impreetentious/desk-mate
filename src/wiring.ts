@@ -69,6 +69,7 @@ import { createScheduler, type Scheduler } from "./cron/scheduler.ts";
 import { createPgBossCronQueue } from "./cron/job-queue.ts";
 import { createDeployStore, type Deployment } from "./deploy/deploy-store.ts";
 import { createDockerDeployProvider } from "./deploy/docker-deploy-provider.ts";
+import { createAwsDeployProvider, type StoredDeployBody } from "./deploy/aws-deploy-provider.ts";
 import type { DeployProvider } from "./deploy/deploy-provider.ts";
 import { createDeployService } from "./deploy/deploy-service.ts";
 import {
@@ -97,6 +98,7 @@ import {
 } from "./files/durable-byte-store.ts";
 import { createMemoryFileArtifactStore, type FileArtifactStore } from "./files/file-artifact-store.ts";
 import { createPostgresFileArtifactStore } from "./files/postgres-file-artifact-store.ts";
+import { createAwsSandbox, type StoredMicrovm } from "./sandbox/aws-sandbox.ts";
 import { createLocalSandbox } from "./sandbox/local-sandbox.ts";
 import { createSpritesSandbox } from "./sandbox/sprites-sandbox.ts";
 import {
@@ -571,9 +573,22 @@ export function buildApp(
       ...(config.apiBaseUrl ? { apiBaseUrl: config.apiBaseUrl } : {}),
       onError: sandboxOnError,
     });
+  const buildAws = (): Sandbox => {
+    if (!config.awsSandbox.s3Bucket) throw new Error("SANDBOX_BACKEND=aws requires AWS_SANDBOX_S3_BUCKET");
+    return createAwsSandbox(workspace, {
+      ...config.awsSandbox,
+      s3Bucket: config.awsSandbox.s3Bucket,
+      advisoryLock,
+      extraTools: deploymentLayer.advertisedTools,
+      credentialPaths: deploymentLayer.credentialPaths,
+      store: artifactMap<StoredMicrovm>("aws_sandbox_bodies"),
+      onError: sandboxOnError,
+    });
+  };
   const buildBackend: Record<Config["sandboxBackend"], () => Sandbox> = {
     local: buildLocal,
     sprites: buildSprites,
+    aws: buildAws,
   };
   const sandboxBackends: Partial<Record<SandboxBackendName, Sandbox>> = {
     [config.sandboxBackend]: buildBackend[config.sandboxBackend](),
@@ -732,7 +747,22 @@ export function buildApp(
         : {}),
     },
   });
-  const deployProvider: DeployProvider = createDockerDeployProvider();
+  const deployProvider: DeployProvider =
+    config.deployProvider === "aws"
+      ? createAwsDeployProvider({
+          ...config.awsDeploy,
+          ...(!config.awsDeploy.dataBucket && config.awsSandbox.s3Bucket
+            ? { dataBucket: config.awsSandbox.s3Bucket }
+            : {}),
+          advisoryLock,
+          store: artifactMap<StoredDeployBody>("aws_deploy_bodies"),
+        })
+      : createDockerDeployProvider();
+  if (config.deployProvider === "aws" && !config.awsDeploy.dataBucket && !config.awsSandbox.s3Bucket) {
+    console.warn(
+      "[wiring] aws deploy: no data bucket resolved (AWS_DEPLOY_DATA_BUCKET unset, sandbox is not aws) — deployed apps have NO durable /data",
+    );
+  }
   const approvals = artifactMap<PendingApprovalRecord>("approvals");
   const adminGrantPersist = config.databaseUrl
     ? createPostgresAdminGrantStore(config.databaseUrl)

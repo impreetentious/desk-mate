@@ -210,7 +210,7 @@ test("a set-but-unparseable env value refuses to boot instead of silently taking
 });
 
 test("sandbox backend is parsed once before production backend guards", () => {
-  assert.equal(loadConfig({ SANDBOX_BACKEND: " sprites " }).sandboxBackend, "sprites");
+  assert.equal(loadConfig({ SANDBOX_BACKEND: " aws " }).sandboxBackend, "aws");
   assert.throws(
     () => loadConfig({ ...productionEnv, SANDBOX_BACKEND: "bogus" }),
     /SANDBOX_BACKEND="bogus" is not recognized/,

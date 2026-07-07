@@ -12,6 +12,7 @@ npm install
 npm exec deskmate -- check
 npm exec deskmate -- infra render
 npm exec deskmate -- doctor
+npm exec deskmate -- infra build-image
 npm exec deskmate -- plan
 npm exec deskmate -- up --yes
 npm exec deskmate -- check --live
@@ -29,7 +30,7 @@ path locally.
 
 The CLI deploys long-running Deskmate services; it is not the runtime. Docker runs
 them locally, Fly runs them as Fly apps with Fly Machines for agent computers, and AWS
-runs digest-pinned ARM64 tasks on ECS Fargate.
+runs digest-pinned ARM64 tasks on ECS Fargate with Lambda MicroVM agent computers.
 
 ## Deployment directory
 
@@ -89,7 +90,7 @@ Auto uses its built-in model classifier unless `deskmate.config.jsonc` declares 
 init [dir] [--org id] [--target docker|fly|aws]
 check [--json] [--live]
 doctor
-infra render|delete-task-definitions
+infra render|build-image|delete-image|delete-task-definitions
 conformance [dir] [--static]
 plan
 up [--yes] [--build-from[=repo]] [--image-label label]

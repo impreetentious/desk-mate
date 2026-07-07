@@ -60,6 +60,8 @@ const server = createServer(built.app, {
   brokeredServices: () => built.brokeredTools.map((tool) => tool.service),
   deploymentLayer: built.deploymentLayerStore,
   deployDialTimeoutMs: config.deployDialTimeoutMs,
+  ...(config.awsDeploy.appsDomain ? { deployAppsDomain: config.awsDeploy.appsDomain } : {}),
+  ...(config.awsDeploy.gateSecret ? { deployGateSecret: config.awsDeploy.gateSecret } : {}),
   ...(config.deployAppsSessionSecret ? { deployAppsSessionSecret: config.deployAppsSessionSecret } : {}),
   ...(config.deployAppsLoginUrl ? { deployAppsLoginUrl: config.deployAppsLoginUrl } : {}),
   scheduler: built.scheduler,

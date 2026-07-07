@@ -7,6 +7,7 @@ type SecretGate =
   | "sprites"
   | "fly-sandbox"
   | "fly-deploy"
+  | "aws-deploy-gate"
   | "google-oauth"
   | "dropbox-oauth"
   | "linear-oauth"
@@ -32,6 +33,7 @@ export const CORE_SECRET_SPECS: readonly RuntimeSecretSpec[] = [
   { name: "SPRITES_TOKEN", requiredWhen: "sprites" },
   { name: "FLY_API_TOKEN", requiredWhen: "fly-sandbox" },
   { name: "FLY_DEPLOY_API_TOKEN", requiredWhen: "fly-deploy" },
+  { name: "AWS_DEPLOY_GATE_SECRET", requiredWhen: "aws-deploy-gate" },
   { name: "GOOGLE_OAUTH_CLIENT_SECRET", requiredWhen: "google-oauth" },
   { name: "DROPBOX_OAUTH_CLIENT_SECRET", requiredWhen: "dropbox-oauth" },
   { name: "LINEAR_OAUTH_CLIENT_SECRET", requiredWhen: "linear-oauth" },
@@ -44,6 +46,7 @@ const GATE_PREDICATES: Readonly<Record<SecretGate, (env: NodeJS.ProcessEnv) => b
   sprites: (env) => env.SANDBOX_BACKEND === "sprites" || env.SANDBOX_SECONDARY_BACKEND === "sprites",
   "fly-sandbox": (env) => env.SANDBOX_BACKEND === "fly",
   "fly-deploy": (env) => env.DEPLOY_PROVIDER === "fly",
+  "aws-deploy-gate": (env) => Boolean(env.AWS_DEPLOY_APPS_DOMAIN),
   "google-oauth": (env) => Boolean(env.GOOGLE_OAUTH_CLIENT_ID),
   "dropbox-oauth": (env) => Boolean(env.DROPBOX_OAUTH_CLIENT_ID),
   "linear-oauth": (env) => Boolean(env.LINEAR_OAUTH_CLIENT_ID),

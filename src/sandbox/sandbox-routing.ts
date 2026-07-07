@@ -14,7 +14,7 @@ import {
   type TeardownOptions,
 } from "./sandbox.ts";
 
-export type SandboxBackendName = "sprites" | "local";
+export type SandboxBackendName = "sprites" | "aws" | "local";
 
 export interface SandboxRoute {
   backend: SandboxBackendName;

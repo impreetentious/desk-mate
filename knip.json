@@ -12,6 +12,8 @@
     ".": {
       "entry": [
         "src/sandbox/local-sandbox.ts",
+        "scripts/aws-deploy-smoke.ts",
+        "scripts/aws-litestream-smoke.ts",
         "scripts/backfill-session-tape.ts",
         "scripts/dev/cli.ts",
         "scripts/dev/supervisor/main.ts",
