@@ -39,8 +39,8 @@ export function createPgBossCronQueue(
     async start(handlers, tickIntervalMs) {
       await boss.start();
       try {
-        await boss.createQueue(FIRE_QUEUE, { policy: "short" });
-        await boss.createQueue(TICK_QUEUE, { policy: "short" });
+        await boss.createQueue(FIRE_QUEUE, { policy: "short", notify: true });
+        await boss.createQueue(TICK_QUEUE, { policy: "short", notify: true });
         const localConcurrency = Math.min(32, Math.max(1, Math.trunc(fireConcurrency)));
         await boss.work<CronFireJob>(
           FIRE_QUEUE,
