@@ -84,14 +84,13 @@ export function createPostgresRunSignalStore(connectionString: string): RunSigna
       );
       return rows
         .sort((a, b) => Number(a.id) - Number(b.id))
-        .map(
-          (r): RunSignal =>
-            r.payload != null
-              ? (r.payload as RunSignal)
-              : {
-                  kind: r.kind as RunSignalKind,
-                  ...(r.text != null ? { text: r.text as string } : {}),
-                },
+        .map((r): RunSignal =>
+          r.payload != null
+            ? (r.payload as RunSignal)
+            : {
+                kind: r.kind as RunSignalKind,
+                ...(r.text != null ? { text: r.text as string } : {}),
+              },
         );
     },
 

@@ -41,15 +41,13 @@ export function createPostgresRunActivityStore(connectionString: string): RunAct
         `SELECT seq, parent_seq, type, payload, created_at FROM run_activity WHERE run_id=$1 ORDER BY id`,
         [runId],
       );
-      return rows.map(
-        (r): RunActivityEntry => ({
-          seq: Number(r.seq),
-          parentSeq: r.parent_seq == null ? null : Number(r.parent_seq),
-          type: r.type as string,
-          payload: r.payload,
-          createdAt: Number(r.created_at),
-        }),
-      );
+      return rows.map((r): RunActivityEntry => ({
+        seq: Number(r.seq),
+        parentSeq: r.parent_seq == null ? null : Number(r.parent_seq),
+        type: r.type as string,
+        payload: r.payload,
+        createdAt: Number(r.created_at),
+      }));
     },
 
     async close() {

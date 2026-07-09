@@ -13,9 +13,7 @@ interface SurfaceContextApp {
 }
 
 export type ContextOutcome =
-  | { status: "done"; result: SurfaceContextResult }
-  | { status: "failed"; error?: string }
-  | { status: "timeout" };
+  { status: "done"; result: SurfaceContextResult } | { status: "failed"; error?: string } | { status: "timeout" };
 
 export async function awaitContextOutcome(
   app: Pick<SurfaceContextApp, "getContextRequest" | "deleteContextRequest">,

@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.6.9",
+  "version": "0.6.10",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -41,7 +41,7 @@
     "@aws-sdk/client-sts": "^3.1075.0",
     "@aws-sdk/credential-provider-node": "^3.972.58",
     "@fly/sprites": "0.0.1",
-    "@openai/codex": "0.142.2",
+    "@openai/codex": "0.142.3",
     "@opencode-ai/plugin": "1.17.11",
     "@opencode-ai/sdk": "1.17.11",
     "@slack/bolt": "^4.7.3",
@@ -81,9 +81,9 @@
     "@types/tar-stream": "^3.1.4",
     "eslint": "^10.4.1",
     "globals": "^17.6.0",
-    "knip": "^6.21.0",
+    "knip": "^6.22.0",
     "oxlint": "^1.71.0",
-    "prettier": "3.8.5",
+    "prettier": "3.9.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.61.0"
   }

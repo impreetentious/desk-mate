@@ -51,9 +51,7 @@ export const MEMORY_CONSOLIDATION_PROMPT = [
 ].join("\n");
 
 export type ConsolidationAction =
-  | { kind: "update"; index: number; text: string }
-  | { kind: "delete"; index: number }
-  | { kind: "add"; text: string };
+  { kind: "update"; index: number; text: string } | { kind: "delete"; index: number } | { kind: "add"; text: string };
 
 export function parseConsolidationActions(out: string): ConsolidationAction[] {
   const actions: ConsolidationAction[] = [];

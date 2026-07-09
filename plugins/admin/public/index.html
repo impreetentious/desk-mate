@@ -7922,13 +7922,11 @@
         };
       });
       $("view-governance").addEventListener("input", (e) => {
-        if (
-          !(
-            e.target instanceof HTMLInputElement ||
-            e.target instanceof HTMLTextAreaElement ||
-            e.target instanceof HTMLSelectElement
-          )
-        )
+        if (!(
+          e.target instanceof HTMLInputElement ||
+          e.target instanceof HTMLTextAreaElement ||
+          e.target instanceof HTMLSelectElement
+        ))
           return;
         if (e.target.id === "soul") updateSoulWorkbench();
         if (e.target.closest("#card-service-credentials")) updateScFormDirty();

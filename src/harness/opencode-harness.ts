@@ -460,8 +460,7 @@ export function createOpenCodeHarness(opts: OpenCodeHarnessOptions = {}): Harnes
 
   const processEvent = async (event: unknown): Promise<void> => {
     const payload = (event as { payload?: unknown }).payload as
-      | { type?: string; properties?: Record<string, unknown> }
-      | undefined;
+      { type?: string; properties?: Record<string, unknown> } | undefined;
     if (payload?.type === "session.created") {
       const info = payload.properties?.info as { id?: string; parentID?: string } | undefined;
       const parent = info?.parentID ? active.get(info.parentID) : undefined;

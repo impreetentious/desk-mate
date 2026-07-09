@@ -305,8 +305,7 @@ interface SurfaceFileResult {
 }
 
 type SurfaceStandingOrderResult =
-  | { ok: true; orders: string; bots?: Record<string, BotPolicy> }
-  | { ok: false; message: string };
+  { ok: true; orders: string; bots?: Record<string, BotPolicy> } | { ok: false; message: string };
 
 export interface SurfaceToolDeps {
   post(text: string, opts?: SurfacePostOpts, files?: readonly string[]): Promise<SurfacePostResult>;

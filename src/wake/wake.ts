@@ -15,9 +15,7 @@ export interface Wake {
 }
 
 export type WakeRoute =
-  | { kind: "engage" }
-  | { kind: "steer"; signal: RunSignalKind; text?: string }
-  | { kind: "drop"; reason: string };
+  { kind: "engage" } | { kind: "steer"; signal: RunSignalKind; text?: string } | { kind: "drop"; reason: string };
 
 export function routeWake(wake: Wake, runIsLive: boolean, liveRunGated = false): WakeRoute {
   if (wake.isSelf) return { kind: "drop", reason: "self" };

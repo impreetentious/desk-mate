@@ -992,7 +992,7 @@ test("a second ambient wake while the first worker is LIVE steers into it instea
     { container, ts: "100.2", authorId: "U2", text: "same here, meetup page too", createdAt: 2 },
   ]);
   let signals: any[] = [];
-  for (const deadline = Date.now() + 5_000; !signals.length && Date.now() < deadline; ) {
+  for (const deadline = Date.now() + 5_000; !signals.length && Date.now() < deadline;) {
     signals = await built.signals.takePending(live!.id);
     if (!signals.length) await sleep(50);
   }

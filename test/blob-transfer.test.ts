@@ -272,8 +272,7 @@ test("s3 ensureExpiry installs a transfer-prefix lifecycle rule on a bucket with
   const cfg = fake.getLifecycle();
   assert.ok(cfg, "a lifecycle config was PUT");
   const ours = cfg!.Rules.find((r) => r.ID === "deskmate-transfer-expiry") as
-    | { Filter?: unknown; Expiration?: unknown; Status?: unknown }
-    | undefined;
+    { Filter?: unknown; Expiration?: unknown; Status?: unknown } | undefined;
   assert.ok(ours, "our rule is present");
   assert.deepEqual(ours!.Filter, { Prefix: "transfer/" }, "scoped to the disposable transfer/ prefix");
   assert.deepEqual(ours!.Expiration, { Days: 1 });

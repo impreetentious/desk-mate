@@ -35,14 +35,10 @@ export interface DirectoryMeta {
 }
 
 export type RecipientResolution =
-  | { kind: "one"; member: DirectoryMember }
-  | { kind: "ambiguous"; candidates: DirectoryMember[] }
-  | { kind: "none" };
+  { kind: "one"; member: DirectoryMember } | { kind: "ambiguous"; candidates: DirectoryMember[] } | { kind: "none" };
 
 export type ChannelResolution =
-  | { kind: "one"; channel: DirectoryChannel }
-  | { kind: "ambiguous"; candidates: DirectoryChannel[] }
-  | { kind: "none" };
+  { kind: "one"; channel: DirectoryChannel } | { kind: "ambiguous"; candidates: DirectoryChannel[] } | { kind: "none" };
 
 export interface DirectoryStore {
   replace(members: DirectoryMember[]): Promise<void>;
