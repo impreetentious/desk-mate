@@ -47,9 +47,9 @@ test("every web-ui-enabled model passes the web-turn model gate (no 403 for an o
   }
 });
 
-test("regression: gpt-5.2 is web-ui-enabled (the reported 403)", () => {
-  assert.ok(DEFAULT_WEBUI_MODEL_IDS.includes("gpt-5.2"));
-  assert.equal(validateWebTurnModelOptions({ model: "gpt-5.2" }, null), null);
+test("regression: gpt-5.6-sol is web-ui-enabled (the reported 403)", () => {
+  assert.ok(DEFAULT_WEBUI_MODEL_IDS.includes("gpt-5.6-sol"));
+  assert.equal(validateWebTurnModelOptions({ model: "gpt-5.6-sol" }, null), null);
 });
 
 test("FAST_MODE_MODEL_IDS derives from the registry — the web-ui client reads this, keeps no copy", () => {
@@ -64,9 +64,9 @@ test("FAST_MODE_MODEL_IDS derives from the registry — the web-ui client reads 
 
 test("exposure is provider-key-aware: a model whose provider is unconfigured is not serviceable", () => {
   const noOpenai = { anthropic: true, openai: false, openrouter: false };
-  assert.equal(modelServiceable("gpt-5.2", noOpenai), false);
+  assert.equal(modelServiceable("gpt-5.6-sol", noOpenai), false);
   assert.equal(modelServiceable("claude-opus-4-8", noOpenai), true);
-  assert.deepEqual(serviceableModelIds(["claude-opus-4-8", "gpt-5.2"], noOpenai), ["claude-opus-4-8"]);
+  assert.deepEqual(serviceableModelIds(["claude-opus-4-8", "gpt-5.6-sol"], noOpenai), ["claude-opus-4-8"]);
 });
 
 test("provider-key gating applies only to key-authed harnesses (no over-hiding on CLI-auth harnesses)", () => {
@@ -89,17 +89,17 @@ test("provider-key gating applies only to key-authed harnesses (no over-hiding o
 
 test("web-turn gate refuses a keyless model cleanly, accepts it once the provider is configured", () => {
   const noOpenai = { anthropic: true, openai: false, openrouter: false };
-  const refused = validateWebTurnModelOptions({ model: "gpt-5.2" }, null, noOpenai);
+  const refused = validateWebTurnModelOptions({ model: "gpt-5.6-sol" }, null, noOpenai);
   assert.match(refused ?? "", /provider isn't configured/);
   assert.equal(
-    validateWebTurnModelOptions({ model: "gpt-5.2" }, null, { anthropic: true, openai: true, openrouter: false }),
+    validateWebTurnModelOptions({ model: "gpt-5.6-sol" }, null, { anthropic: true, openai: true, openrouter: false }),
     null,
   );
 });
 
 test("fast-mode support is registry-driven", () => {
   assert.equal(modelSupportsFastMode("claude-opus-4-8"), true);
-  assert.equal(modelSupportsFastMode("gpt-5.2"), false);
+  assert.equal(modelSupportsFastMode("gpt-5.6-sol"), false);
   assert.equal(modelSupportsFastMode(undefined), false);
   assert.equal(modelSupportsFastMode("nonexistent-model"), false);
 });
@@ -118,7 +118,7 @@ test("every selectable base model resolves against the model catalog", () => {
 test("selectable models span providers (multi-provider is wired)", () => {
   const providers = new Set(SELECTABLE_BASE_MODELS.map((m) => getRequiredModel(m.id).provider));
   assert.ok(providers.has("anthropic"), "expected at least one Anthropic model");
-  assert.ok(providers.has("openai"), "expected at least one OpenAI model (gpt-5.2)");
+  assert.ok(providers.has("openai"), "expected at least one OpenAI model (gpt-5.6)");
   assert.ok(providers.has("openrouter"), "expected an OpenRouter-hosted open-model option");
 });
 
@@ -129,12 +129,12 @@ test("unknown models are not silently accepted", () => {
 
 test("native harnesses reject cross-provider pins and choose their own defaults", () => {
   assert.equal(modelSupportedByHarness("claude-opus-4-8", "claude"), true);
-  assert.equal(modelSupportedByHarness("gpt-5.2", "claude"), false);
-  assert.equal(modelSupportedByHarness("gpt-5.2", "codex"), true);
+  assert.equal(modelSupportedByHarness("gpt-5.6-sol", "claude"), false);
+  assert.equal(modelSupportedByHarness("gpt-5.6-sol", "codex"), true);
   assert.equal(modelSupportedByHarness("claude-opus-4-8", "codex"), false);
   assert.equal(modelSupportedByHarness("claude-future-9", "claude"), true);
   assert.equal(modelSupportedByHarness("gpt-future-9", "codex"), true);
-  assert.equal(defaultModelForHarness("codex", "claude-opus-4-8"), "gpt-5.2");
+  assert.equal(defaultModelForHarness("codex", "claude-opus-4-8"), "gpt-5.6-sol");
 });
 
 test("the default base model follows the providers a deployment can actually bill", () => {
@@ -148,7 +148,7 @@ test("the default base model follows the providers a deployment can actually bil
     );
   }
   assert.equal(defaultModelForHarness("mock", undefined, onlyProvider("openrouter")), "openrouter/auto");
-  assert.equal(defaultModelForHarness("mock", undefined, onlyProvider("openai")), "gpt-5.2");
+  assert.equal(defaultModelForHarness("mock", undefined, onlyProvider("openai")), "gpt-5.6-sol");
 });
 
 test("provider-blind callers and explicit pins keep the shipped default", () => {
@@ -168,7 +168,7 @@ test("provider-blind callers and explicit pins keep the shipped default", () => 
 
 test("a provider that cannot serve a harness has no default model for it", () => {
   assert.equal(defaultModelForProvider("mock", "openrouter"), "openrouter/auto");
-  assert.equal(defaultModelForProvider("codex", "openai"), "gpt-5.2");
+  assert.equal(defaultModelForProvider("codex", "openai"), "gpt-5.6-sol");
   assert.equal(defaultModelForProvider("claude", "anthropic"), "claude-opus-4-7");
   assert.equal(defaultModelForProvider("codex", "anthropic"), undefined, "the Codex CLI runs no Anthropic model");
   assert.equal(defaultModelForProvider("claude", "openrouter"), undefined, "the Claude CLI runs no OpenRouter model");
@@ -184,13 +184,13 @@ test("the curated catalog contains only current model families", () => {
       "claude-opus-4-8",
       "claude-sonnet-4-6",
       "claude-haiku-4-5",
-      "gpt-5.2",
-      "gpt-5.1",
-      "gpt-4.1-mini",
+      "gpt-5.6-sol",
+      "gpt-5.6-terra",
+      "gpt-5.6-luna",
       "openrouter/auto",
     ],
   );
-  assert.equal(getRequiredModel("gpt-5.2").contextWindow, 1_050_000);
+  assert.equal(getRequiredModel("gpt-5.6-sol").contextWindow, 1_050_000);
 });
 
 test("auxiliary models come from the configured base model's own provider", () => {
@@ -202,16 +202,16 @@ test("auxiliary models come from the configured base model's own provider", () =
   assert.equal(auxiliaryModelFor("claude-opus-4-8"), "claude-haiku-4-5");
   assert.equal(auxiliaryModelFor("claude-fable-5"), "claude-haiku-4-5");
   assert.equal(
-    auxiliaryModelFor("gpt-5.2"),
-    "gpt-4.1-mini",
+    auxiliaryModelFor("gpt-5.6-sol"),
+    "gpt-5.6-luna",
     "an OpenAI deployment gets an OpenAI auxiliary, never Haiku",
   );
-  assert.equal(auxiliaryModelFor("gpt-5.1"), "gpt-4.1-mini");
+  assert.equal(auxiliaryModelFor("gpt-5.6-terra"), "gpt-5.6-luna");
 });
 
 test("the Anthropic auxiliary is resolvable by provider, so Anthropic-only surfaces keep working", () => {
   assert.equal(auxiliaryModelForProvider("anthropic"), "claude-haiku-4-5");
-  assert.equal(auxiliaryModelForProvider("openai"), "gpt-4.1-mini");
+  assert.equal(auxiliaryModelForProvider("openai"), "gpt-5.6-luna");
   assert.equal(auxiliaryModelForProvider("nope"), undefined);
 });
 
@@ -255,7 +255,7 @@ test("an auxiliary is never less serviceable than the base model it was derived 
 test("context token budget is half of each model's real input room", () => {
   assert.equal(getRequiredModel("claude-fable-5").contextWindow, 1_000_000);
   assert.equal(contextTokenBudgetForModel("claude-fable-5"), Math.floor((1_000_000 - 128_000) * 0.5));
-  const sol = contextTokenBudgetForModel("gpt-5.2");
+  const sol = contextTokenBudgetForModel("gpt-5.6-sol");
   assert.equal(sol, Math.floor((1_050_000 - 128_000) * 0.5));
   assert.ok(sol !== undefined && sol < 1_050_000 * 0.5, "budget stays below half the window");
   assert.equal(contextTokenBudgetForModel("claude-not-a-real-model"), undefined);
@@ -273,9 +273,9 @@ test("catalog measurements are pinned: compaction reads these, and a hand edit m
     ["claude-opus-4-8", "anthropic", 1_000_000, 128_000],
     ["claude-sonnet-4-6", "anthropic", 1_000_000, 128_000],
     ["claude-haiku-4-5", "anthropic", 200_000, 64_000],
-    ["gpt-5.2", "openai", 1_050_000, 128_000],
-    ["gpt-5.1", "openai", 1_050_000, 128_000],
-    ["gpt-4.1-mini", "openai", 1_050_000, 128_000],
+    ["gpt-5.6-sol", "openai", 1_050_000, 128_000],
+    ["gpt-5.6-terra", "openai", 1_050_000, 128_000],
+    ["gpt-5.6-luna", "openai", 1_050_000, 128_000],
     ["openrouter/auto", "openrouter", 2_000_000, 4_096],
     ["claude-opus-4-6", "anthropic", 1_000_000, 128_000],
   ]);

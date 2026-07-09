@@ -80,8 +80,8 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
     auxiliary: true,
   },
   {
-    id: "gpt-5.2",
-    name: "GPT-5.2",
+    id: "gpt-5.6-sol",
+    name: "GPT-5.6 Sol",
     provider: "openai",
     contextWindow: 1_050_000,
     maxTokens: 128_000,
@@ -90,8 +90,8 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
     fastMode: false,
   },
   {
-    id: "gpt-5.1",
-    name: "GPT-5.1",
+    id: "gpt-5.6-terra",
+    name: "GPT-5.6 Terra",
     provider: "openai",
     contextWindow: 1_050_000,
     maxTokens: 128_000,
@@ -100,8 +100,8 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
     fastMode: false,
   },
   {
-    id: "gpt-4.1-mini",
-    name: "GPT-4.1 mini",
+    id: "gpt-5.6-luna",
+    name: "GPT-5.6 Luna",
     provider: "openai",
     contextWindow: 1_050_000,
     maxTokens: 128_000,

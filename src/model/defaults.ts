@@ -7,7 +7,7 @@ import type { ModelProviderAvailability } from "./providers.ts";
 export const DEFAULT_AGENT_MODEL_ID = "claude-opus-4-7";
 
 /** Codex runs OpenAI models only, so it defaults away from the shipped Anthropic default. */
-export const DEFAULT_CODEX_MODEL_ID = "gpt-5.2";
+export const DEFAULT_CODEX_MODEL_ID = "gpt-5.6-sol";
 
 /**
  * Flat input price used to estimate per-principal spend. A single figure on purpose: budgets are

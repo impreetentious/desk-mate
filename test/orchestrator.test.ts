@@ -682,12 +682,12 @@ test("browse follows a live org base model change, not the process-start default
   assert.equal(res.status, "ok");
   assert.equal(captured?.env?.BROWSE_LAB_MODEL, "claude-opus-4-7", "starts on the deployment default");
 
-  built.config.setBaseModel("org:default-org", "gpt-5.2");
+  built.config.setBaseModel("org:default-org", "gpt-5.6-sol");
   res = await app.turn(dm("!run echo keys", { conversation: { kind: "dm", threadRef: "dm:U1:live2" } }));
   assert.equal(res.status, "ok");
   assert.equal(
     captured?.env?.BROWSE_LAB_MODEL,
-    "gpt-5.2",
+    "gpt-5.6-sol",
     "an admin changing the org base model moves browse too, without a restart",
   );
   assert.equal(captured?.env?.BROWSE_LAB_MODEL_PROVIDER, "openai");
@@ -699,7 +699,7 @@ test("an OpenAI deployment tells the browse runner to build an OpenAI client", a
     orgId: "acme",
     signingSecret: "test-secret",
     apiBaseUrl: "https://core.example.com",
-    modelId: "gpt-5.2",
+    modelId: "gpt-5.6-sol",
     openaiApiKey: "openai-org-key",
   });
   const { app, sandbox } = buildApp(config);
@@ -712,7 +712,7 @@ test("an OpenAI deployment tells the browse runner to build an OpenAI client", a
 
   const res = await app.turn(dm("!run echo keys", { conversation: { kind: "dm", threadRef: "dm:U1:oa1" } }));
   assert.equal(res.status, "ok");
-  assert.equal(captured?.env?.BROWSE_LAB_MODEL, "gpt-5.2");
+  assert.equal(captured?.env?.BROWSE_LAB_MODEL, "gpt-5.6-sol");
   assert.equal(captured?.env?.BROWSE_LAB_MODEL_PROVIDER, "openai", "never hardcoded to anthropic");
 });
 

@@ -67,16 +67,16 @@ test("admin model credentials are encrypted, write-only, live, and removable", a
         { id: "claude-opus-4-8", name: "Claude Opus 4.8", provider: "anthropic" },
         { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "anthropic" },
         { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", provider: "anthropic" },
-        { id: "gpt-5.2", name: "GPT-5.2", provider: "openai" },
-        { id: "gpt-5.1", name: "GPT-5.1", provider: "openai" },
-        { id: "gpt-4.1-mini", name: "GPT-4.1 mini", provider: "openai" },
+        { id: "gpt-5.6-sol", name: "GPT-5.6 Sol", provider: "openai" },
+        { id: "gpt-5.6-terra", name: "GPT-5.6 Terra", provider: "openai" },
+        { id: "gpt-5.6-luna", name: "GPT-5.6 Luna", provider: "openai" },
         { id: "openrouter/auto", name: "OpenRouter Auto", provider: "openrouter" },
       ],
     });
     const scopeBefore = await fetch(`${srv.base}/v1/admin/scopes/org%3Adefault-org`, { headers: ADMIN });
     assert.equal(scopeBefore.status, 200);
     const beforeOptions = ((await scopeBefore.json()) as { baseModelOptions: Array<{ id: string }> }).baseModelOptions;
-    assert.ok(!beforeOptions.some((model) => model.id === "gpt-5.2"));
+    assert.ok(!beforeOptions.some((model) => model.id === "gpt-5.6-sol"));
 
     const denied = await fetch(`${srv.base}/v1/admin/model-providers/openai`, {
       method: "PUT",
@@ -97,7 +97,7 @@ test("admin model credentials are encrypted, write-only, live, and removable", a
     assert.equal(scopeAfter.status, 200);
     const afterOptions = ((await scopeAfter.json()) as { baseModelOptions: Array<{ id: string }> }).baseModelOptions;
     assert.ok(
-      !afterOptions.some((model) => model.id === "gpt-5.2"),
+      !afterOptions.some((model) => model.id === "gpt-5.6-sol"),
       "a stored key is not the OpenCode sidecar's key source — it reads the deployment environment",
     );
 
@@ -329,8 +329,8 @@ test("managed provider keys do not advertise unsupported OpenCode or browser cre
     };
     assert.deepEqual(data.baseModelOptions, []);
     assert.deepEqual(data.browseModelOptions, []);
-    assert.ok(data.modelsByHarness.mock!.some((model) => model.id === "gpt-5.2"));
-    assert.ok(!data.modelsByHarness.opencode!.some((model) => model.id === "gpt-5.2"));
+    assert.ok(data.modelsByHarness.mock!.some((model) => model.id === "gpt-5.6-sol"));
+    assert.ok(!data.modelsByHarness.opencode!.some((model) => model.id === "gpt-5.6-sol"));
   } finally {
     await srv.close();
   }
@@ -351,13 +351,13 @@ test("web turns gate the requested and scope-selected harness against its real k
         ...overrides,
       });
 
-    const requested = await turn("web:alice:requested-opencode", { harness: "opencode", model: "gpt-5.2" });
+    const requested = await turn("web:alice:requested-opencode", { harness: "opencode", model: "gpt-5.6-sol" });
     assert.equal(requested.status, "refused");
     assert.match(requested.reason ?? "", /provider isn't configured/);
 
     await srv.built.config.setRuntimeSelectionLatest("personal:alice", {
       harnessId: "opencode",
-      modelId: "gpt-5.2",
+      modelId: "gpt-5.6-sol",
     });
     const configured = await turn("web:alice:configured-opencode");
     assert.equal(configured.status, "refused");

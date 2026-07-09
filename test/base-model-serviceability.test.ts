@@ -55,7 +55,7 @@ test("base-model set rejects a model whose provider key is absent (would fail pr
     const bad = await fetch(`${srv.base}/v1/admin/scopes/org:default-org/base-model`, {
       method: "PUT",
       headers: ADMIN,
-      body: JSON.stringify({ modelId: "gpt-5.2" }),
+      body: JSON.stringify({ modelId: "gpt-5.6-sol" }),
     });
     assert.equal(bad.status, 400);
     assert.match(((await bad.json()) as { message?: string }).message ?? "", /serviceable|provider key|not supported/i);
@@ -74,7 +74,7 @@ test("base-model set rejects a model whose provider key is absent (would fail pr
 test("a deployment that declares a provider runs that provider's base model", async () => {
   for (const [modelProvider, key, expected, harness] of [
     ["anthropic", "anthropicApiKey", "claude-opus-4-7", "claude"],
-    ["openai", "openaiApiKey", "gpt-5.2", "codex"],
+    ["openai", "openaiApiKey", "gpt-5.6-sol", "codex"],
     ["openrouter", "openrouterApiKey", "openrouter/auto", "mock"],
   ] as const) {
     const srv = start({ modelProvider, [key]: `deployment-${modelProvider}-key` }, harness);

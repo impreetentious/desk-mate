@@ -546,7 +546,7 @@ test("the ambient judge model is independent of the detect model (PI_JUDGE_MODEL
 
 test("an OpenAI-only deployment judges with an OpenAI auxiliary model, not Haiku", async () => {
   const dataDir = mkdtempSync(join(tmpdir(), "ap-surfcache-"));
-  const built = buildApp(testConfig({ dataDir, modelId: "gpt-5.2", openaiApiKey: "sk-openai-test" }));
+  const built = buildApp(testConfig({ dataDir, modelId: "gpt-5.6-sol", openaiApiKey: "sk-openai-test" }));
   built.runtime.start();
   try {
     const container = "C-openai-judge";
@@ -555,7 +555,7 @@ test("an OpenAI-only deployment judges with an OpenAI auxiliary model, not Haiku
     await pollDeliveries(built.deliveries);
     const rows = await listFull(built.ambientJudgments!, { container });
     assert.equal(rows.length, 1, "one row for the judged batch");
-    assert.equal(rows[0]!.model, "gpt-4.1-mini", "the auxiliary follows the configured base model's provider");
+    assert.equal(rows[0]!.model, "gpt-5.6-luna", "the auxiliary follows the configured base model's provider");
   } finally {
     await built.runtime.stop();
   }
@@ -564,7 +564,7 @@ test("an OpenAI-only deployment judges with an OpenAI auxiliary model, not Haiku
 test("an admin-set org base model drives the auxiliary, not just the AGENT_MODEL env", async () => {
   const dataDir = mkdtempSync(join(tmpdir(), "ap-surfcache-"));
   const built = buildApp(testConfig({ dataDir, openaiApiKey: "sk-openai-test" }));
-  built.config.setBaseModel("org:default-org", "gpt-5.2");
+  built.config.setBaseModel("org:default-org", "gpt-5.6-sol");
   built.runtime.start();
   try {
     const container = "C-admin-base";
@@ -575,7 +575,7 @@ test("an admin-set org base model drives the auxiliary, not just the AGENT_MODEL
     assert.equal(rows.length, 1, "one row for the judged batch");
     assert.equal(
       rows[0]!.model,
-      "gpt-4.1-mini",
+      "gpt-5.6-luna",
       "onboarding through the admin UI, not AGENT_MODEL, still moves the auxiliary",
     );
   } finally {
