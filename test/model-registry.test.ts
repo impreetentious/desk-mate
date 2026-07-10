@@ -155,8 +155,8 @@ test("provider-blind callers and explicit pins keep the shipped default", () => 
   assert.equal(defaultModelForHarness("mock"), "claude-opus-4-7");
   assert.equal(defaultModelForHarness("mock", undefined, onlyProvider("anthropic")), "claude-opus-4-7");
   assert.equal(
-    defaultModelForHarness("mock", "claude-sonnet-4-6", onlyProvider("openrouter")),
-    "claude-sonnet-4-6",
+    defaultModelForHarness("mock", "claude-sonnet-5", onlyProvider("openrouter")),
+    "claude-sonnet-5",
     "an explicit pin is never silently swapped — the mismatch is rejected at config load instead",
   );
   assert.equal(
@@ -182,7 +182,7 @@ test("the curated catalog contains only current model families", () => {
       "claude-fable-5",
       "claude-opus-4-7",
       "claude-opus-4-8",
-      "claude-sonnet-4-6",
+      "claude-sonnet-5",
       "claude-haiku-4-5",
       "gpt-5.6-sol",
       "gpt-5.6-terra",
@@ -271,12 +271,13 @@ test("catalog measurements are pinned: compaction reads these, and a hand edit m
     ["claude-fable-5", "anthropic", 1_000_000, 128_000],
     ["claude-opus-4-7", "anthropic", 1_000_000, 128_000],
     ["claude-opus-4-8", "anthropic", 1_000_000, 128_000],
-    ["claude-sonnet-4-6", "anthropic", 1_000_000, 128_000],
+    ["claude-sonnet-5", "anthropic", 1_000_000, 128_000],
     ["claude-haiku-4-5", "anthropic", 200_000, 64_000],
     ["gpt-5.6-sol", "openai", 1_050_000, 128_000],
     ["gpt-5.6-terra", "openai", 1_050_000, 128_000],
     ["gpt-5.6-luna", "openai", 1_050_000, 128_000],
     ["openrouter/auto", "openrouter", 2_000_000, 4_096],
+    ["claude-sonnet-4-6", "anthropic", 1_000_000, 128_000],
     ["claude-opus-4-6", "anthropic", 1_000_000, 128_000],
   ]);
 });

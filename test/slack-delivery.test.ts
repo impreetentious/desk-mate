@@ -584,7 +584,7 @@ test("headerUpdate rewrites only an empty or self-authored header", () => {
   const desired = "Model: Claude Opus 4.8 · https://claw.acme.dev";
   assert.equal(headerUpdate(undefined, BOT, desired), "set");
   assert.equal(headerUpdate({ value: "" }, BOT, desired), "set");
-  assert.equal(headerUpdate({ value: "Model: Claude Sonnet 4.6", creator: BOT }, BOT, desired), "set");
+  assert.equal(headerUpdate({ value: "Model: Claude Sonnet 5", creator: BOT }, BOT, desired), "set");
   assert.equal(headerUpdate({ value: desired, creator: BOT }, BOT, desired), "skip");
   assert.equal(headerUpdate({ value: "my own notes", creator: "U0HUMAN" }, BOT, desired), "skip");
   assert.equal(

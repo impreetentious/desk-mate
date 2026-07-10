@@ -269,8 +269,8 @@ function userMessage(text: string, images: HarnessTurnInput["images"] = []): SDK
 
 function thinkingFromMessage(message: SDKMessage): string[] {
   if (message.type !== "assistant") return [];
-  return message.message.content.flatMap((block) =>
-    block.type === "thinking" && block.thinking.trim() ? [block.thinking] : [],
+  return message.message.content.flatMap((block: { type?: string; thinking?: string }) =>
+    block.type === "thinking" && (block.thinking ?? "").trim() ? [block.thinking] : [],
   );
 }
 

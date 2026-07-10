@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/microvms:al2023-minimal@sha256:1cc40991f5cab3fc8d2dd16350354d5780ea9e878fcf9f46904dddd63a7b983b
+FROM public.ecr.aws/lambda/microvms:al2023-minimal@sha256:05cb9b38d841e7ff1b693dc9e894909612f340bf99ec97d426e8000a5bbe96c3
 
 RUN dnf install -y \
       curl-minimal findutils tar git wget jq unzip \
@@ -14,7 +14,7 @@ RUN dnf install -y \
 
 RUN curl -fsSL https://cli.github.com/packages/rpm/gh-cli.repo \
        -o /etc/yum.repos.d/gh-cli.repo \
-  && dnf install -y gh-2.95.0-1 \
+  && dnf install -y gh-2.96.0-1 \
   && dnf clean all \
   && gh --version
 

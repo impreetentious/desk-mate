@@ -59,8 +59,8 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
     fastMode: true,
   },
   {
-    id: "claude-sonnet-4-6",
-    name: "Claude Sonnet 4.6",
+    id: "claude-sonnet-5",
+    name: "Claude Sonnet 5",
     provider: "anthropic",
     contextWindow: 1_000_000,
     maxTokens: 128_000,
@@ -122,6 +122,16 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
   },
   // Superseded releases: still resolvable so a pinned selection keeps working, but not offered
   // in any picker.
+  {
+    id: "claude-sonnet-4-6",
+    name: "Claude Sonnet 4.6",
+    provider: "anthropic",
+    contextWindow: 1_000_000,
+    maxTokens: 128_000,
+    base: false,
+    webui: false,
+    fastMode: false,
+  },
   {
     id: "claude-opus-4-6",
     name: "Claude Opus 4.6",
