@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.10.7",
+  "version": "0.10.8",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -70,7 +70,7 @@
     },
     "brace-expansion": "5.0.7",
     "fast-json-stringify": {
-      "fast-uri": "4.1.0"
+      "fast-uri": "4.1.1"
     },
     "protobufjs": "7.6.5"
   },
