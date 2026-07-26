@@ -18,8 +18,8 @@ RUN curl -fsSL https://cli.github.com/packages/rpm/gh-cli.repo \
   && dnf clean all \
   && gh --version
 
-RUN curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.34.54.zip" -o /tmp/awscliv2.zip \
-  && echo "f381be152a868ccfdd0cb7cb235916b1dd8024e388bdeef0c385fb33af131a60  /tmp/awscliv2.zip" | sha256sum -c - \
+RUN curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.36.5.zip" -o /tmp/awscliv2.zip \
+  && echo "2662774cf3e70e2203ca1e6b85b84ff8438f6638523ea9d474f9731472740d85  /tmp/awscliv2.zip" | sha256sum -c - \
   && unzip -q /tmp/awscliv2.zip -d /tmp \
   && /tmp/aws/install \
   && rm -rf /tmp/aws /tmp/awscliv2.zip \
