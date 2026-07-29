@@ -242,7 +242,7 @@ test("runtime-config lets a person set, keep, and inherit an approved personal r
     assert.equal(initial.scopeOverride, null);
     assert.deepEqual(initial.modelsByHarness.claude, [
       "claude-fable-5",
-      "claude-opus-4-7",
+      "claude-opus-5",
       "claude-opus-4-8",
       "claude-sonnet-5",
       "claude-haiku-4-5",
@@ -632,7 +632,7 @@ test("webui-models is an org-wide string-list read back via admin GET and surfac
     ]);
 
     const before = await fetch(`${srv.base}/v1/surface-config`);
-    assert.equal(((await before.json()) as { baseModel: string }).baseModel, "claude-opus-4-7");
+    assert.equal(((await before.json()) as { baseModel: string }).baseModel, "claude-opus-5");
     const setBase = await fetch(`${srv.base}/v1/admin/scopes/org:default-org/base-model`, {
       method: "PUT",
       headers: ADMIN,

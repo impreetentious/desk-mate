@@ -152,8 +152,8 @@ test("the default base model follows the providers a deployment can actually bil
 });
 
 test("provider-blind callers and explicit pins keep the shipped default", () => {
-  assert.equal(defaultModelForHarness("mock"), "claude-opus-4-7");
-  assert.equal(defaultModelForHarness("mock", undefined, onlyProvider("anthropic")), "claude-opus-4-7");
+  assert.equal(defaultModelForHarness("mock"), "claude-opus-5");
+  assert.equal(defaultModelForHarness("mock", undefined, onlyProvider("anthropic")), "claude-opus-5");
   assert.equal(
     defaultModelForHarness("mock", "claude-sonnet-5", onlyProvider("openrouter")),
     "claude-sonnet-5",
@@ -161,7 +161,7 @@ test("provider-blind callers and explicit pins keep the shipped default", () => 
   );
   assert.equal(
     defaultModelForHarness("mock", undefined, { anthropic: false, openai: false, openrouter: false }),
-    "claude-opus-4-7",
+    "claude-opus-5",
     "with no provider at all the shipped default stands rather than an arbitrary pick",
   );
 });
@@ -169,7 +169,7 @@ test("provider-blind callers and explicit pins keep the shipped default", () => 
 test("a provider that cannot serve a harness has no default model for it", () => {
   assert.equal(defaultModelForProvider("mock", "openrouter"), "openrouter/auto");
   assert.equal(defaultModelForProvider("codex", "openai"), "gpt-5.6-sol");
-  assert.equal(defaultModelForProvider("claude", "anthropic"), "claude-opus-4-7");
+  assert.equal(defaultModelForProvider("claude", "anthropic"), "claude-opus-5");
   assert.equal(defaultModelForProvider("codex", "anthropic"), undefined, "the Codex CLI runs no Anthropic model");
   assert.equal(defaultModelForProvider("claude", "openrouter"), undefined, "the Claude CLI runs no OpenRouter model");
   assert.equal(defaultModelForProvider("opencode", "openrouter"), undefined, "opencode has no OpenRouter route");
@@ -180,7 +180,7 @@ test("the curated catalog contains only current model families", () => {
     SELECTABLE_BASE_MODELS.map((model) => model.id),
     [
       "claude-fable-5",
-      "claude-opus-4-7",
+      "claude-opus-5",
       "claude-opus-4-8",
       "claude-sonnet-5",
       "claude-haiku-4-5",
@@ -195,7 +195,7 @@ test("the curated catalog contains only current model families", () => {
 
 test("auxiliary models come from the configured base model's own provider", () => {
   assert.equal(
-    auxiliaryModelFor("claude-opus-4-7"),
+    auxiliaryModelFor("claude-opus-5"),
     "claude-haiku-4-5",
     "the deployment default resolves an Anthropic auxiliary",
   );
@@ -269,7 +269,7 @@ test("catalog measurements are pinned: compaction reads these, and a hand edit m
   const measured = MODEL_REGISTRY.map((m) => [m.id, m.provider, m.contextWindow, m.maxTokens] as const);
   assert.deepEqual(measured, [
     ["claude-fable-5", "anthropic", 1_000_000, 128_000],
-    ["claude-opus-4-7", "anthropic", 1_000_000, 128_000],
+    ["claude-opus-5", "anthropic", 1_000_000, 128_000],
     ["claude-opus-4-8", "anthropic", 1_000_000, 128_000],
     ["claude-sonnet-5", "anthropic", 1_000_000, 128_000],
     ["claude-haiku-4-5", "anthropic", 200_000, 64_000],
@@ -278,6 +278,7 @@ test("catalog measurements are pinned: compaction reads these, and a hand edit m
     ["gpt-5.6-luna", "openai", 1_050_000, 128_000],
     ["openrouter/auto", "openrouter", 2_000_000, 4_096],
     ["claude-sonnet-4-6", "anthropic", 1_000_000, 128_000],
+    ["claude-opus-4-7", "anthropic", 1_000_000, 128_000],
     ["claude-opus-4-6", "anthropic", 1_000_000, 128_000],
   ]);
 });

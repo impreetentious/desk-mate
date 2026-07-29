@@ -73,7 +73,7 @@ test("base-model set rejects a model whose provider key is absent (would fail pr
 
 test("a deployment that declares a provider runs that provider's base model", async () => {
   for (const [modelProvider, key, expected, harness] of [
-    ["anthropic", "anthropicApiKey", "claude-opus-4-7", "claude"],
+    ["anthropic", "anthropicApiKey", "claude-opus-5", "claude"],
     ["openai", "openaiApiKey", "gpt-5.6-sol", "codex"],
     ["openrouter", "openrouterApiKey", "openrouter/auto", "mock"],
   ] as const) {
@@ -96,7 +96,7 @@ test("an undeclared deployment keeps the shipped default, whatever keys it holds
     try {
       assert.equal(
         await effectiveModel(srv.base),
-        "claude-opus-4-7",
+        "claude-opus-5",
         "upgrading must not move an existing deployment's model or its billing",
       );
     } finally {

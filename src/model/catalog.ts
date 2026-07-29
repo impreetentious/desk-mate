@@ -39,8 +39,8 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
     fastMode: false,
   },
   {
-    id: "claude-opus-4-7",
-    name: "Claude Opus 4.7",
+    id: "claude-opus-5",
+    name: "Claude Opus 5",
     provider: "anthropic",
     contextWindow: 1_000_000,
     maxTokens: 128_000,
@@ -131,6 +131,16 @@ export const MODEL_REGISTRY: readonly ModelEntry[] = [
     base: false,
     webui: false,
     fastMode: false,
+  },
+  {
+    id: "claude-opus-4-7",
+    name: "Claude Opus 4.7",
+    provider: "anthropic",
+    contextWindow: 1_000_000,
+    maxTokens: 128_000,
+    base: false,
+    webui: false,
+    fastMode: true,
   },
   {
     id: "claude-opus-4-6",
