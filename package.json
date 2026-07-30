@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.11.4",
+  "version": "0.11.5",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -19,6 +19,7 @@
     "test:e2e": "node --test test/e2e/*.test.ts",
     "test:all": "node --experimental-test-module-mocks --test 'test/**/*.test.ts'",
     "smoke:git-cli": "node scripts/git-cli-smoke.ts",
+    "smoke:service-cred": "node scripts/service-credential-livetest.ts",
     "smoke:aws-sandbox": "node scripts/aws-sandbox-smoke.ts",
     "smoke:local-sandbox": "node scripts/local-sandbox-smoke.ts",
     "build:aws-image": "node scripts/aws-build-sandbox-image.ts",
