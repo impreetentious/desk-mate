@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Every release-version surface has to agree with package.json. The core and
 // the published CLI ship in lockstep, so both packages carry the same version.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -41,6 +41,17 @@ if (has("cli/package.json")) {
   checkLock("cli/package-lock.json", "cli/package-lock.json");
   const linked = json("package-lock.json").packages?.cli?.version;
   if (linked !== version) errors.push(`package-lock.json packages.cli.version ${linked} != ${version}`);
+}
+
+// Plugins live in this repo and ship with it, so each one carries the release version too.
+if (has("plugins")) {
+  for (const name of readdirSync(path.join(root, "plugins")).sort()) {
+    const dir = `plugins/${name}`;
+    if (!has(`${dir}/package.json`)) continue;
+    const plugin = json(`${dir}/package.json`).version;
+    if (plugin !== version) errors.push(`${dir}/package.json ${plugin} != ${version}`);
+    if (has(`${dir}/package-lock.json`)) checkLock(`${dir}/package-lock.json`, `${dir}/package-lock.json`);
+  }
 }
 
 if (errors.length) {
