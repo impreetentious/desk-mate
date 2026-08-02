@@ -1,0 +1,15 @@
+/*
+ * The web UI's stylesheet entry.
+ *
+ * This app previously imported a prebuilt Tailwind bundle from a third-party component package.
+ * It now runs Tailwind itself, over its own sources plus the three mini-lit components it
+ * renders — those emit utility classes (`border-border`, `text-muted-foreground`, `px-3`) that
+ * have to exist in the output. `@source` is what tells Tailwind where to look; dropping the
+ * mini-lit entry silently unstyles code blocks and the theme toggle.
+ */
+@import "tailwindcss";
+
+@source "./";
+@source "../node_modules/@mariozechner/mini-lit/dist";
+
+@import "./theme-tokens.css";
