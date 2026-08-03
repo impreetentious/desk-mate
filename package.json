@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.12.3",
+  "version": "0.12.4",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -74,13 +74,7 @@
     "fast-json-stringify": {
       "fast-uri": "4.1.1"
     },
-    "protobufjs": "7.6.5",
-    "@oxc-parser/binding-wasm32-wasi@0.140.0": {
-      "@napi-rs/wasm-runtime": "1.1.6"
-    },
-    "@oxc-resolver/binding-wasm32-wasi@11.24.2": {
-      "@napi-rs/wasm-runtime": "1.1.6"
-    }
+    "protobufjs": "7.6.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
