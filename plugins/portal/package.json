@@ -1,6 +1,6 @@
 {
   "name": "deskmate-portal-plugin",
-  "version": "0.13.3",
+  "version": "0.13.4",
   "private": true,
   "type": "module",
   "description": "Public SSO front door and path-prefix reverse proxy to private web and admin surfaces.",
@@ -8,6 +8,7 @@
     "node": ">=24.0.0"
   },
   "scripts": {
+    "start": "node src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --test"
   },
