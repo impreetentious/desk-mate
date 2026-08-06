@@ -1,6 +1,6 @@
 {
   "name": "deskmate-web-ui-plugin",
-  "version": "0.13.2",
+  "version": "0.13.3",
   "private": true,
   "type": "module",
   "description": "Web UI surface plugin for deskmate. Custom chat shell over a thin node:http transport that talks only to the core HTTP API.",
