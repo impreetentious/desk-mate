@@ -108,26 +108,35 @@ test("pg mutex: the lock is released after fn THROWS (the next acquire succeeds)
 test("pg mutex: waiting beyond timeoutMs throws a clear error", { skip }, async () => {
   const pgHolder = createPgPool(URL!, []);
   const pgWaiter = createPgPool(URL!, []);
+  let release!: () => void;
+  let holding: Promise<void> | undefined;
   try {
     const holder = createPostgresAdvisoryLock(pgHolder, { pollMs: 20 });
     const waiter = createPostgresAdvisoryLock(pgWaiter, { pollMs: 20, timeoutMs: 100 });
-    let release!: () => void;
+    let acquired!: () => void;
+    const ready = new Promise<void>((r) => {
+      acquired = r;
+    });
     const held = new Promise<void>((r) => {
       release = r;
     });
-    const holding = holder.withLock("deploy:slow", async () => {
+    holding = holder.withLock("deploy:slow", async () => {
+      acquired();
       await held;
     });
-    await sleep(30);
+    await Promise.race([ready, holding]);
     await assert.rejects(
       () => waiter.withLock("deploy:slow", async () => "never"),
       /timeout acquiring advisory lock for deploy:slow/,
       "waiting past timeoutMs throws a clear error",
     );
-    release();
-    await holding;
   } finally {
-    await pgHolder.close();
-    await pgWaiter.close();
+    release?.();
+    try {
+      await holding;
+    } finally {
+      await pgHolder.close();
+      await pgWaiter.close();
+    }
   }
 });
