@@ -234,7 +234,12 @@ const flyOwnershipMarker = (flyOrg: string, orgId: string, appPrefix: string): s
 function deriveToml(ctx: FlyCtx, service: ServiceName): string {
   const spec = serviceDef(service).fly!;
   const nested = join(ctx.templateRoot, service, "fly.toml");
-  const base = readFileSync(existsSync(nested) ? nested : join(ctx.templateRoot, `${service}.toml`), "utf8");
+  const flat = join(ctx.templateRoot, `${service}.toml`);
+  const template = existsSync(nested) ? nested : flat;
+  const base = readFileSync(
+    existsSync(template) ? template : join(packagedFlyTemplateRoot(), `${service}.toml`),
+    "utf8",
+  );
   const sandboxEnv = service === "core" ? sandboxCoreEnv(ctx.config).env : {};
   const virtualEnv = service === "core" ? virtualServiceEnv(ctx.config.services, ctx.config.env) : {};
   const modelEnv: Record<string, string> =
