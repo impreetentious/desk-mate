@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deploy Deskmate"
+  short_description: "Deploy and onboard Deskmate in your cloud"
+  default_prompt: "Use $deploy-deskmate to deploy this repository into my AWS or Fly.io account."
