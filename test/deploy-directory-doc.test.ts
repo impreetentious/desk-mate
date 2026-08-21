@@ -36,7 +36,10 @@ test("every ENFORCED deployment-contract clause names a verifier and its impleme
       ["../src/sandbox/aws-sandbox.ts", /function createAwsSandbox/],
       ["../cli/src/backends/aws.ts", /AWS_SANDBOX_IMAGE_VERSION/],
     ],
-    "target.provider-registry": [["../cli/src/backends/registry.ts", /HOSTING_PROVIDERS/]],
+    "target.provider-registry": [
+      ["../cli/src/backends/registry.ts", /HOSTING_PROVIDERS/],
+      ["../cli/test/package.test.ts", /packed npm artifact creates and operates a standalone deployment repository/],
+    ],
   };
   const enforced = rows.filter((row) => row[2] === "ENFORCED").map((row) => row[1]!);
   assert.deepEqual(

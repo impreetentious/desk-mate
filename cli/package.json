@@ -1,6 +1,6 @@
 {
   "name": "@deskmate-dev/deskmate",
-  "version": "0.15.10",
+  "version": "0.15.11",
   "license": "MIT",
   "description": "Control-plane CLI for portable Deskmate deployments on Docker, Fly, and AWS.",
   "type": "module",
@@ -40,7 +40,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --test test/*.test.ts",
     "test:e2e": "node --test test/e2e/*.e2e.test.ts",
-    "test:all": "node --test test/*.test.ts test/e2e/*.e2e.test.ts"
+    "test:all": "node --test test/*.test.ts test/e2e/*.e2e.test.ts",
+    "test:pack": "node --test test/package.test.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
