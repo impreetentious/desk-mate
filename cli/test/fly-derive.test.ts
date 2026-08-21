@@ -5,9 +5,18 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadConfigAt, type DeskmateConfig } from "../src/config.ts";
 import { derivedTomlFor } from "../src/backends/fly.ts";
-import { orgEnv } from "../src/services.ts";
+import { orgEnv, runnableServices } from "../src/services.ts";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+
+test("acme fly config derives the checked-in deploy/<svc>/fly.toml byte-for-byte", () => {
+  const { config } = loadConfigAt(join(repoRoot, "deploy", "stacks", "acme", "deskmate.config.jsonc"));
+  for (const svc of runnableServices(config.services)) {
+    const derived = derivedTomlFor(config, svc, repoRoot);
+    const checkedIn = readFileSync(join(repoRoot, "deploy", svc, "fly.toml"), "utf8");
+    assert.equal(derived, checkedIn, `derived ${svc} fly.toml diverged from deploy/${svc}/fly.toml`);
+  }
+});
 
 test("web-ui serves at the root in both shapes — publicUrl IS the web-ui URL (no /web-ui suffix)", () => {
   const url = "https://acme-web-ui.fly.dev";
@@ -93,7 +102,7 @@ test("a vms override rewrites the core [[vm]] size/memory without touching other
   assert.doesNotMatch(coreToml, /size = "shared-cpu-1x"/);
   assert.doesNotMatch(coreToml, /memory = "2gb"/);
   const adminToml = derivedTomlFor(config, "admin", repoRoot);
-  const adminVm = readFileSync(join(repoRoot, "cli", "templates", "fly", "admin.toml"), "utf8").match(
+  const adminVm = readFileSync(join(repoRoot, "deploy", "admin", "fly.toml"), "utf8").match(
     /\[\[vm\]\][\s\S]*?(?=\n\[|\n\n|$)/,
   );
   if (adminVm) assert.ok(adminToml.includes(adminVm[0]), "admin [[vm]] block changed despite no vms override");
