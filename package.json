@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.16.1",
+  "version": "0.16.2",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -12,6 +12,9 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env src/index.ts",
     "dev": "SHUTDOWN_DRAIN_MS=2000 node --env-file-if-exists=.env --watch src/index.ts",
+    "dev-instance": "bash scripts/dev-instance.sh up",
+    "dev-instance:status": "bash scripts/dev-instance.sh status",
+    "dev-instance:down": "bash scripts/dev-instance.sh down",
     "worker": "node --env-file-if-exists=.env src/runs/worker-main.ts",
     "test": "node --experimental-test-module-mocks --test test/*.test.ts",
     "test:root:shard": "node scripts/run-root-test-shard.mjs",
@@ -33,7 +36,8 @@
     "format": "prettier --write --ignore-unknown .",
     "format:check": "prettier --check --ignore-unknown .",
     "lint": "eslint .",
-    "lint:ox": "oxlint --deny-warnings src plugins scripts cli test"
+    "lint:ox": "oxlint --deny-warnings src plugins scripts cli test",
+    "dev-instance:doctor": "bash scripts/dev-instance.sh doctor"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.211",

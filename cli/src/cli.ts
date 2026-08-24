@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { CliError, bold, dim, errMessage, note, ok, red } from "./log.ts";
 import {
@@ -302,8 +302,6 @@ async function dispatch(argv: string[]): Promise<void> {
       if (!["up", "down", "status", "restart", "canary", "logs", "doctor"].includes(positionals[0] ?? "up"))
         rejectExtraPositionals(positionals, 1);
       const root = gitTopLevel();
-      if (!existsSync(join(root, "scripts/dev/cli.ts")))
-        throw new CliError("contributor dev tooling is unavailable in this checkout; use dev --ci for CI mode");
       const configPath = findConfigPath(root);
       const orgId = strFlag(flags, "org") ?? (configPath && readConfigOrgId(configPath)) ?? "acme";
       const result = spawnSync(process.execPath, [join(root, "scripts/dev/cli.ts"), ...argv.slice(1)], {
