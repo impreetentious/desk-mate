@@ -5,4 +5,4 @@
  * `package.json`, the lockfile root, the README marker, and the CLI package,
  * which ship in lockstep. `npm run check:version` runs it.
  */
-export const DESKMATE_VERSION = "0.16.4";
+export const DESKMATE_VERSION = "0.16.5";
