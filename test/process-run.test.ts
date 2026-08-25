@@ -110,7 +110,7 @@ test("processRun heartbeats the lease while the turn runs, and the beat stops wi
   const store = createMemoryRunStore();
   const { runs, beats } = spyHeartbeats(store.runs);
 
-  let release = (_: TurnResult) => {};
+  let release: (value: TurnResult) => void = () => {};
   const gate = new Promise<TurnResult>((resolve) => {
     release = resolve;
   });
@@ -149,7 +149,7 @@ test("a retryable turn failure requeues the run, rethrows, and stops the heartbe
   const store = createMemoryRunStore();
   const { runs, beats } = spyHeartbeats(store.runs);
 
-  let explode = (_: Error) => {};
+  let explode: (reason: Error) => void = () => {};
   const gate = new Promise<TurnResult>((_, reject) => {
     explode = reject;
   });
@@ -325,7 +325,7 @@ test("the heartbeat stops before complete(), so a late tick cannot spuriously ab
   const store = createMemoryRunStore();
   const { runs, beats } = spyHeartbeats(store.runs);
 
-  let release = (_: TurnResult) => {};
+  let release: (value: TurnResult) => void = () => {};
   const gate = new Promise<TurnResult>((resolve) => {
     release = resolve;
   });
