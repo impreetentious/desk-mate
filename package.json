@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.16.3",
+  "version": "0.16.4",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -20,6 +20,9 @@
     "test:root:shard": "node scripts/run-root-test-shard.mjs",
     "test:root:shard:check": "node scripts/run-root-test-shard.mjs --check --shards 5",
     "test:e2e": "node --test test/e2e/*.test.ts",
+    "live-e2e": "node test/live-slack/run.ts",
+    "gallery:shots": "node test/live-slack/screenshots.ts",
+    "gallery:shots:login": "node test/live-slack/screenshots.ts --login",
     "test:all": "node --experimental-test-module-mocks --test 'test/**/*.test.ts'",
     "smoke:git-cli": "node scripts/git-cli-smoke.ts",
     "smoke:google-oauth": "node scripts/google-oauth-smoke.ts",
