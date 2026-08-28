@@ -1,6 +1,6 @@
 {
   "name": "@deskmate-dev/deskmate",
-  "version": "0.16.6",
+  "version": "0.16.7",
   "license": "MIT",
   "description": "Control-plane CLI for portable Deskmate deployments on Docker, Fly, and AWS.",
   "type": "module",
