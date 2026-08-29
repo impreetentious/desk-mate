@@ -40,6 +40,17 @@ test("package-consumer deployment skill covers both self-owned providers and the
   }
   assert.match(read("deployment.md"), /cli\/templates\/deployment\/deployment\.md/);
   for (const path of [
+    ".codex/skills/deploy-deskmate/SKILL.md",
+    ".codex/skills/deploy-deskmate/agents/openai.yaml",
+    ".codex/skills/deploy-deskmate/references/fly.md",
+    ".codex/skills/deploy-deskmate/references/aws.md",
+    ".codex/skills/deploy-deskmate/references/slack.md",
+    ".codex/skills/deploy-deskmate/references/email.md",
+  ]) {
+    assert.ok(existsSync(path), `${path} exists`);
+  }
+  assert.match(read(".codex/skills/deploy-deskmate/SKILL.md"), /\.\.\/\.\.\/\.\.\/deployment\.md/);
+  for (const path of [
     "cli/templates/deployment/deployment.md",
     "cli/templates/deployment/SKILL.md",
     "cli/templates/deployment/references/fly.md",
@@ -65,9 +76,13 @@ test("the deploy skill tells an agent where the sign-in email transport comes fr
   }
   assert.match(email, /operator — needs DNS control/, "the one step an agent cannot do itself is called out");
   assert.match(read("cli/templates/deployment/deployment.md"), /references\/email\.md/);
-  for (const skill of ["cli/templates/deployment/SKILL.md"]) {
+  for (const skill of [".codex/skills/deploy-deskmate/SKILL.md", "cli/templates/deployment/SKILL.md"]) {
     assert.match(read(skill), /references\/email\.md/, `${skill} routes the agent to the email reference`);
   }
+  assert.match(
+    read(".codex/skills/deploy-deskmate/references/email.md"),
+    /cli\/templates\/deployment\/references\/email\.md/,
+  );
 });
 
 test("connector onboarding is governed by the live admin-configured list", () => {
