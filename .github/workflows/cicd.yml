@@ -114,7 +114,7 @@ jobs:
           highest=$(printf '%s\n%s\n' "$base_version" "$head_version" | sort -V | tail -1)
           if [ "$base_version" = "$head_version" ] || [ "$highest" != "$head_version" ]; then
             printf '%s\n' "$changed" >&2
-            echo "these files ship in @deskmate-dev/deskmate; bump cli/package.json past $base_version" >&2
+            echo "these files ship in @p4dx/deskmate; bump cli/package.json past $base_version" >&2
             exit 1
           fi
           case "$head_version" in

@@ -11,7 +11,7 @@ Please report suspected vulnerabilities privately through this repository's
 or pull request with exploit details.
 
 Include the affected revision, configuration, impact, and the smallest reproduction
-you can safely provide. We will acknowledge the report, investigate it, and coordinate
+you can safely provide. I will acknowledge the report, investigate it, and coordinate
 disclosure with you. Do not access data that is not yours or test against deployments
 you do not own.
 

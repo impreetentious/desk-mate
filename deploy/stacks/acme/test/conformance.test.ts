@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
-import { contractVersion, loadConfigAt, validateSandboxLayer } from "@deskmate-dev/deskmate/contract";
+import { contractVersion, loadConfigAt, validateSandboxLayer } from "@p4dx/deskmate/contract";
 
 test("acme deployment conforms to contract v1", () => {
   assert.equal(contractVersion, 1);

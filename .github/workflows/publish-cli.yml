@@ -82,15 +82,15 @@ jobs:
         run: |
           set -euo pipefail
           version=$(jq -r .version package.json)
-          if npm view "@deskmate-dev/deskmate@$version" version > /dev/null 2>&1; then
+          if npm view "@p4dx/deskmate@$version" version > /dev/null 2>&1; then
             published=$(mktemp -d)
-            tarball=$(npm pack "@deskmate-dev/deskmate@$version" --pack-destination "$published" --silent | tail -1)
+            tarball=$(npm pack "@p4dx/deskmate@$version" --pack-destination "$published" --silent | tail -1)
             tar -xzf "$published/$tarball" -C "$published" package/manifest.json
             if [ "$(jq -Sc . "$published/package/manifest.json")" != "$(jq -Sc . manifest.json)" ]; then
-              echo "@deskmate-dev/deskmate@$version is on npm pinning different image digests; bump the version" >&2
+              echo "@p4dx/deskmate@$version is on npm pinning different image digests; bump the version" >&2
               exit 1
             fi
-            echo "@deskmate-dev/deskmate@$version is already on npm pinning these digests; keeping it"
+            echo "@p4dx/deskmate@$version is already on npm pinning these digests; keeping it"
             exit 0
           fi
           npm publish --provenance --access public

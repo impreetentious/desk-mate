@@ -104,7 +104,7 @@ test("the published package pins real image digests, never the checked-in sentin
 test("the release republishes nothing already on npm so a half-finished run can resume", () => {
   const workflow = readFileSync(".github/workflows/publish-cli.yml", "utf8");
 
-  assert.match(workflow, /if npm view "@deskmate-dev\/deskmate@\$version" version/);
+  assert.match(workflow, /if npm view "@p4dx\/deskmate@\$version" version/);
   assert.ok(
     workflow.indexOf("npm view") < workflow.indexOf("npm publish --provenance"),
     "the already-published check guards the publish rather than following it",
@@ -167,7 +167,7 @@ test("the tag is created atomically at the released commit, never adopted from e
 test("a resumed publish keeps npm only when it already pins the digests being released", () => {
   const workflow = readFileSync(".github/workflows/publish-cli.yml", "utf8");
 
-  assert.match(workflow, /npm pack "@deskmate-dev\/deskmate@\$version"/);
+  assert.match(workflow, /npm pack "@p4dx\/deskmate@\$version"/);
   assert.match(workflow, /tar -xzf "\$published\/\$tarball" -C "\$published" package\/manifest\.json/);
   assert.match(workflow, /is on npm pinning different image digests; bump the version/);
   assert.ok(

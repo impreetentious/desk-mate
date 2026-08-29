@@ -101,14 +101,9 @@ Deploying does not require a copy of this repository. `deskmate init` materializ
 deployment directory from the published package:
 
 ```bash
-npm exec --yes --package=@deskmate-dev/deskmate@<exact-version> -- \
+npm exec --yes --package=@p4dx/deskmate@<exact-version> -- \
   deskmate init . --org acme --target aws
 ```
-
-> **Not published yet.** `@deskmate-dev/deskmate` reaches npm with the first tagged
-> release; until then the command above resolves nothing. Run the CLI from a checkout
-> instead, as [`cli/README.md`](./cli/README.md) describes. Once the package is live,
-> pin `<exact-version>` and verify its npm provenance rather than trusting the name.
 
 Initialization materializes a deployment skill for an agent and walks through
 infrastructure, web sign-in, connector credentials, optional Slack access, deployment,
@@ -167,4 +162,4 @@ Deskmate is available under the [MIT License](./LICENSE).
 
 ---
 
-**Version:** v0.18.0
+**Version:** v0.18.1

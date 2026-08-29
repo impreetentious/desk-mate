@@ -18,7 +18,7 @@ the built-in `auth` broker, which needs an email transport, or an external OIDC
 provider such as Slack, which needs no email at all — read `references/email.md`
 only once the operator has chosen the broker.
 
-Use the repository's installed `@deskmate-dev/deskmate` dependency through
+Use the repository's installed `@p4dx/deskmate` dependency through
 `npm exec deskmate -- <command>`. Do not require or clone the Deskmate source repository.
 Do not stop at infrastructure health: complete the acceptance checks and return
 the handoff required by `deployment.md`.

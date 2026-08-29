@@ -462,7 +462,7 @@ test("init preflights package.json and completes an install-first package manife
     assert.equal(manifest.private, true);
     assert.equal(manifest.engines?.node, ">=24.0.0");
     assert.equal(manifest.scripts?.deploy, "deskmate up");
-    assert.equal(manifest.dependencies?.["@deskmate-dev/deskmate"], cliVersion());
+    assert.equal(manifest.dependencies?.["@p4dx/deskmate"], cliVersion());
     assert.equal(manifest.dependencies?.["deskmate-cli"], undefined);
     assert.equal(manifest.dependencies?.other, "1.0.0");
   } finally {
@@ -478,7 +478,7 @@ test("init preserves an installed local package artifact", () => {
       join(dir, "package.json"),
       JSON.stringify({
         private: true,
-        dependencies: { "@deskmate-dev/deskmate": "file:../packages/deskmate-dev-deskmate-0.1.0.tgz" },
+        dependencies: { "@p4dx/deskmate": "file:../packages/p4dx-deskmate-0.1.0.tgz" },
       }),
     );
 
@@ -487,7 +487,7 @@ test("init preserves an installed local package artifact", () => {
     const manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as {
       dependencies?: Record<string, string>;
     };
-    assert.equal(manifest.dependencies?.["@deskmate-dev/deskmate"], "file:../packages/deskmate-dev-deskmate-0.1.0.tgz");
+    assert.equal(manifest.dependencies?.["@p4dx/deskmate"], "file:../packages/p4dx-deskmate-0.1.0.tgz");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -547,7 +547,7 @@ test("the scaffold is an npm-backed deployment repository with no CI coupling an
       scripts?: Record<string, string>;
     };
     assert.equal(packageJson.private, true);
-    assert.equal(packageJson.dependencies?.["@deskmate-dev/deskmate"], cliVersion());
+    assert.equal(packageJson.dependencies?.["@p4dx/deskmate"], cliVersion());
     assert.equal(packageJson.scripts?.check, "deskmate check");
     assert.ok(existsSync(join(dir, "deployment.md")));
     assert.ok(existsSync(join(dir, ".codex", "skills", "deploy-deskmate", "SKILL.md")));

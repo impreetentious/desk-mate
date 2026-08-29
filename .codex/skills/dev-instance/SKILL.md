@@ -79,7 +79,7 @@ A Slack app's **Socket Mode** connection is single-owner: if two running instanc
 at the _same_ app, Slack load-balances inbound messages between them and each instance
 silently loses half. So the rule is **one live instance per Slack app**.
 
-The way we keep out of each other's way is simple: **every developer has their own set of
+Instances keep out of each other's way by a simple rule: **every developer has their own set of
 Slack apps**, listed as `poolN.env` files in their **own machine's** pool store
 (`~/.config/deskmate/slack-pool`). `up` claims the first free slot on _this_ machine and boots
 that app's bot; the script prints its `@handle`. You QA by DMing that bot in

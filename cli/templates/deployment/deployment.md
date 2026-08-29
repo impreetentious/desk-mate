@@ -1,6 +1,6 @@
 # Deploy Deskmate
 
-This repository defines one Deskmate deployment. The `@deskmate-dev/deskmate` dependency supplies
+This repository defines one Deskmate deployment. The `@p4dx/deskmate` dependency supplies
 the deployment engine; this repository owns the organization-specific config,
 sandbox layer, provider coordinates, and generated Slack manifests.
 
@@ -60,7 +60,7 @@ For a repository without `deskmate.config.jsonc`, first confirm the hosting targ
 and the derived slug, install an exact CLI version, and initialize its root:
 
 ```bash
-npm exec --yes --package=@deskmate-dev/deskmate@<exact-version> -- \
+npm exec --yes --package=@p4dx/deskmate@<exact-version> -- \
   deskmate init . --org <slug> --target <fly-or-aws> --model-provider <provider>
 npm install
 ```

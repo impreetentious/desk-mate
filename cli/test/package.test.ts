@@ -29,7 +29,7 @@ test("the package uses the organization scope while keeping the deskmate command
     name?: string;
     bin?: Record<string, string>;
   };
-  assert.equal(packageManifest.name, "@deskmate-dev/deskmate");
+  assert.equal(packageManifest.name, "@p4dx/deskmate");
   assert.equal(packageManifest.bin?.deskmate, "dist/bin/deskmate.js");
 });
 
@@ -52,17 +52,17 @@ test(
       const version = packageManifest["version"] as string;
       registry = createServer((request, response) => {
         const origin = `http://${request.headers.host}`;
-        if (request.url && decodeURIComponent(request.url) === "/@deskmate-dev/deskmate") {
+        if (request.url && decodeURIComponent(request.url) === "/@p4dx/deskmate") {
           response.setHeader("content-type", "application/json");
           response.end(
             JSON.stringify({
-              name: "@deskmate-dev/deskmate",
+              name: "@p4dx/deskmate",
               "dist-tags": { latest: version },
               versions: {
                 [version]: {
                   ...packageManifest,
                   dist: {
-                    tarball: `${origin}/@deskmate-dev/deskmate/-/deskmate-${version}.tgz`,
+                    tarball: `${origin}/@p4dx/deskmate/-/deskmate-${version}.tgz`,
                     shasum: createHash("sha1").update(tarballBytes).digest("hex"),
                     integrity: `sha512-${createHash("sha512").update(tarballBytes).digest("base64")}`,
                   },
@@ -72,7 +72,7 @@ test(
           );
           return;
         }
-        if (request.url === `/@deskmate-dev/deskmate/-/deskmate-${version}.tgz`) {
+        if (request.url === `/@p4dx/deskmate/-/deskmate-${version}.tgz`) {
           response.setHeader("content-type", "application/octet-stream");
           response.end(tarballBytes);
           return;
@@ -94,7 +94,7 @@ test(
           [
             "exec",
             "--yes",
-            `--package=@deskmate-dev/deskmate@${version}`,
+            `--package=@p4dx/deskmate@${version}`,
             "--",
             "deskmate",
             "init",
@@ -118,7 +118,7 @@ test(
           cwd: consumer.dir,
           env: { ...env, NPM_CONFIG_REGISTRY: registryUrl },
         });
-        const installed = join(consumer.dir, "node_modules", "@deskmate-dev", "deskmate");
+        const installed = join(consumer.dir, "node_modules", "@p4dx", "deskmate");
         assert.equal(lstatSync(installed).isSymbolicLink(), false);
         assert.ok(realpathSync(installed).startsWith(`${realpathSync(consumer.dir)}/`));
         const imageManifest = JSON.parse(readFileSync(join(installed, "manifest.json"), "utf8")) as {
@@ -135,7 +135,7 @@ test(
         };
         assert.equal(consumerPackage.private, true);
         assert.equal(consumerPackage.scripts?.deploy, "deskmate up");
-        assert.equal(consumerPackage.dependencies?.["@deskmate-dev/deskmate"], version);
+        assert.equal(consumerPackage.dependencies?.["@p4dx/deskmate"], version);
       }
       await new Promise<void>((resolve, reject) => registry!.close((error) => (error ? reject(error) : resolve())));
       registry = undefined;
@@ -275,7 +275,7 @@ else if (command === "secretsmanager get-secret-value") {
         [
           "--input-type=module",
           "--eval",
-          'import("@deskmate-dev/deskmate/contract").then((m) => process.stdout.write(String(m.contractVersion)))',
+          'import("@p4dx/deskmate/contract").then((m) => process.stdout.write(String(m.contractVersion)))',
         ],
         { cwd: deployment, encoding: "utf8" },
       );
