@@ -22,7 +22,7 @@ and the `upstream-pr` skill for sending changes the other direction.
 git remote -v
 ```
 
-If `origin` is `deskmate/desk-mate`, stop: you are in upstream Deskmate, and a repository
+If `origin` is `ItsMonarch04/desk-mate`, stop: you are in upstream Deskmate, and a repository
 cannot merge from itself. Never merge an organization's private fork into deskmate.
 
 Otherwise proceed. Judge by where `origin` points, not by the repository's name.
@@ -30,7 +30,7 @@ Otherwise proceed. Judge by where `origin` points, not by the repository's name.
 If the clone has no `upstream` remote, add it:
 
 ```bash
-git remote add upstream git@github.com:deskmate/desk-mate
+git remote add upstream git@github.com:ItsMonarch04/desk-mate
 ```
 
 ## Merge, never rebase

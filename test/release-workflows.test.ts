@@ -38,7 +38,7 @@ test("the release signs private images without requiring anonymous registry acce
   assert.match(workflow, /platforms: linux\/amd64\s+provenance: false/);
   assert.match(
     workflow,
-    /image='ghcr\.io\/deskmate\/desk-mate\/\$\{\{ matrix\.name \}\}@\$\{\{ steps\.build\.outputs\.digest \}\}'\s+cosign sign --yes "\$image"\s+cosign verify "\$image"/,
+    /image='\$\{\{ steps\.repo\.outputs\.path \}\}\/\$\{\{ matrix\.name \}\}@\$\{\{ steps\.build\.outputs\.digest \}\}'\s+cosign sign --yes "\$image"\s+cosign verify "\$image"/,
   );
   assert.ok(workflow.indexOf("docker/login-action") < workflow.indexOf("docker/build-push-action"));
   assert.ok(workflow.indexOf("docker/build-push-action") < workflow.indexOf("Sign exact image"));
@@ -55,7 +55,7 @@ test("the CLI package publishes publicly with provenance", () => {
   assert.equal(manifest.private, undefined);
   assert.equal(manifest.publishConfig?.access, "public");
   assert.equal(manifest.publishConfig?.provenance, true);
-  assert.equal(manifest.repository?.url, "git+https://github.com/deskmate/desk-mate.git");
+  assert.equal(manifest.repository?.url, "git+https://github.com/ItsMonarch04/desk-mate.git");
   assert.equal(manifest.repository?.directory, "cli");
   assert.equal(manifest.scripts?.["verify:release"], undefined);
   assert.equal(existsSync("cli/scripts/verify-release-manifest.mjs"), false);

@@ -24,7 +24,7 @@ See [`deploy/layers/README.md`](../../../deploy/layers/README.md) for the bounda
 `git remote -v` tells you which of three situations you are in. This decides the push
 target only; the scrub steps below run in every case.
 
-- `origin` is `deskmate/desk-mate`: you are in upstream deskmate. Push the branch to `origin`
+- `origin` is `ItsMonarch04/desk-mate`: you are in upstream deskmate. Push the branch to `origin`
   and open the PR there.
 - `origin` is a GitHub fork of Deskmate, meaning a repository created with GitHub's fork
   feature and living inside Deskmate's fork network: push to `origin` and open a normal
@@ -166,7 +166,7 @@ that repository:
 
 ```bash
 git push upstream <topic>
-gh pr create --repo deskmate/desk-mate --base main --head <topic> \
+gh pr create --repo ItsMonarch04/desk-mate --base main --head <topic> \
   --title "<title>" --body-file .generated/upstream-pr/body.md
 ```
 

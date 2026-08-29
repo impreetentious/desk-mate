@@ -1,16 +1,16 @@
 {
   "name": "@deskmate-dev/deskmate",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "license": "MIT",
   "description": "Control-plane CLI for portable Deskmate deployments on Docker, Fly, and AWS.",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deskmate/desk-mate.git",
+    "url": "git+https://github.com/ItsMonarch04/desk-mate.git",
     "directory": "cli"
   },
-  "homepage": "https://github.com/deskmate/desk-mate/tree/main/cli#readme",
-  "bugs": "https://github.com/deskmate/desk-mate/issues",
+  "homepage": "https://github.com/ItsMonarch04/desk-mate/tree/main/cli#readme",
+  "bugs": "https://github.com/ItsMonarch04/desk-mate/issues",
   "publishConfig": {
     "access": "public",
     "provenance": true

@@ -105,6 +105,11 @@ npm exec --yes --package=@deskmate-dev/deskmate@<exact-version> -- \
   deskmate init . --org acme --target aws
 ```
 
+> **Not published yet.** `@deskmate-dev/deskmate` reaches npm with the first tagged
+> release; until then the command above resolves nothing. Run the CLI from a checkout
+> instead, as [`cli/README.md`](./cli/README.md) describes. Once the package is live,
+> pin `<exact-version>` and verify its npm provenance rather than trusting the name.
+
 Initialization materializes a deployment skill for an agent and walks through
 infrastructure, web sign-in, connector credentials, optional Slack access, deployment,
 and live verification — no source checkout required. Each deployment runs in the
@@ -118,7 +123,7 @@ An organization that wants to customize its deployment keeps a private fork — 
 standalone private repository whose history begins as a clone of this one:
 
 ```bash
-git clone https://github.com/deskmate/desk-mate.git my-org-agent
+git clone https://github.com/ItsMonarch04/desk-mate.git my-org-agent
 cd my-org-agent
 git remote rename origin upstream
 git remote add origin https://github.com/<your-org>/my-org-agent.git
@@ -162,4 +167,4 @@ Deskmate is available under the [MIT License](./LICENSE).
 
 ---
 
-**Version:** v0.17.0
+**Version:** v0.18.0

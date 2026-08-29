@@ -49,9 +49,10 @@ jobs:
           IMAGES_REF: ${{ inputs.images_ref || github.sha }}
         run: |
           set -euo pipefail
+          owner=$(printf %s "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           out=$(jq -n '{sandboxBase: "", services: {}}')
           for service in core web-ui admin portal auth sandbox-base; do
-            repo="deskmate/desk-mate/$service"
+            repo="$owner/$service"
             token=$(curl -fsS "https://ghcr.io/token?scope=repository:$repo:pull&service=ghcr.io" | jq -r .token)
             digest=$(curl -fsS -o /dev/null -D - -H "Authorization: Bearer $token" \
               -H 'Accept: application/vnd.oci.image.index.v1+json,application/vnd.oci.image.manifest.v1+json,application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json' \
@@ -70,9 +71,10 @@ jobs:
           done
           printf '%s\n' "$out" > cli/manifest.json
           cat cli/manifest.json
-          jq -e '[.sandboxBase] + [.services[]]
+          jq -e --arg prefix "ghcr.io/$owner/" '[.sandboxBase] + [.services[]]
                  | length == 6
-                 and all(test("^ghcr\\.io/deskmate/desk-mate/[a-z-]+@sha256:[0-9a-f]{64}$"))
+                 and all(startswith($prefix))
+                 and all(test("^[^@]+@sha256:[0-9a-f]{64}$"))
                  and all(test("@sha256:(.)\\1{63}$") | not)' cli/manifest.json > /dev/null
           printf 'manifest=%s\n' "$(jq -c . cli/manifest.json)" >> "$GITHUB_OUTPUT"
       - name: Publish

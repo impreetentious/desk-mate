@@ -18,6 +18,10 @@ npm exec deskmate -- up --yes
 npm exec deskmate -- check --live
 ```
 
+The first tagged release is what puts this package on npm; until then the `npm exec` line
+above resolves nothing, and the CLI runs from a checkout instead —
+`npm ci && npm run deskmate -- init . --org acme --target aws` from this directory.
+
 This package is published to npm as `@deskmate-dev/deskmate`, with npm provenance attesting the
 building workflow. A release is one dispatch of `.github/workflows/release.yml` from
 `main`: it signs and pushes the first-party images, publishes the package pinning their
