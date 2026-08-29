@@ -1,6 +1,6 @@
 {
   "name": "deskmate",
-  "version": "0.16.7",
+  "version": "0.16.8",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -38,11 +38,13 @@
     "bench:memory": "node --env-file-if-exists=.env scripts/memory-bench.ts",
     "check:version": "node scripts/check-version-coherence.mjs",
     "typecheck": "tsc --noEmit",
+    "typecheck:contract": "tsc -p tsconfig.contract.json",
     "format": "prettier --write --ignore-unknown .",
     "format:check": "prettier --check --ignore-unknown .",
     "lint": "eslint .",
     "lint:ox": "oxlint --deny-warnings src plugins scripts cli test",
-    "dev-instance:doctor": "bash scripts/dev-instance.sh doctor"
+    "dev-instance:doctor": "bash scripts/dev-instance.sh doctor",
+    "lint:knip": "knip"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.211",

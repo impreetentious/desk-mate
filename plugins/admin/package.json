@@ -1,6 +1,6 @@
 {
   "name": "deskmate-admin-plugin",
-  "version": "0.16.7",
+  "version": "0.16.8",
   "private": true,
   "type": "module",
   "description": "Admin surface plugin for deskmate. A thin web UI over the core admin API (governance: command policy, SOUL, egress). Zero runtime deps.",

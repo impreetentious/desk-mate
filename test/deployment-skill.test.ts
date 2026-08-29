@@ -95,6 +95,10 @@ test(
     );
     if (!isPrivateMirror) {
       assert.ok(!files.includes(".github/workflows/deploy.yml"));
+      assert.doesNotMatch(
+        read(".github/workflows/cicd.yml"),
+        /aws-actions\/configure-aws-credentials|flyctl deploy|deskmate up/,
+      );
     }
 
     assert.ok(!files.some((file) => file.startsWith("cli/templates/workflows/")));
