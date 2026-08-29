@@ -9,6 +9,6 @@ on the underlying implementation.
 
 Please do not have AI artificially expand what you'd like to do into a formal proposal.
 
-Submit changes as a pull request with a focused description of the user-facing reason.
+Submit changes as a PR adding a `.txt` or `.md` file to the [`adrs/`](./adrs/) folder.
 
 PS: Report any security vulnerabilities privately — see [`SECURITY.md`](./SECURITY.md), not a public issue.
