@@ -11,7 +11,7 @@ never travels back upstream.
 For a new hosted instance, follow the repository-root
 [`deployment.md`](../deployment.md) workflow. It:
 
-- asks whether to deploy into the operator's Fly.io organization or AWS account;
+- asks whether to deploy into the operator's Fly.io organization, AWS account, or GCP project;
 - creates the organization's deployment directory under [`layers/`](./layers/) with its
   `deskmate.config.jsonc`;
 - configures verified-email web onboarding before optional Slack;

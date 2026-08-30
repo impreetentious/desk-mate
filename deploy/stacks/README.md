@@ -5,8 +5,8 @@ Fly backend. They are not production deployments and CI does not deploy them.
 
 To self-host Deskmate, start from the repository-root
 [`deployment.md`](../../deployment.md). It creates the organization's deployment directory
-under [`../layers/`](../layers/), asks for the operator's Fly organization or AWS
-account before mutation, and generates the optional bot manifest. It generates a
+under [`../layers/`](../layers/), asks for the operator's Fly organization, AWS
+account, or GCP project before mutation, and generates the optional bot manifest. It generates a
 separate Slack SSO manifest only when Slack is selected as the OIDC provider.
 
 The checked-in `deploy/<service>/fly.toml` files remain the service templates.

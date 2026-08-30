@@ -3,16 +3,16 @@
 Deploying Deskmate does not require a copy of this repository: `deskmate init` materializes a
 deployment directory from the published package, and the README section "Deploy it for
 your org" gives that path. An organization that wants to customize its deployment keeps
-a private fork of the Deskmate repository and puts everything specific to itself in one
+a private repository based on Deskmate and puts everything specific to itself in one
 directory, `deploy/layers/<org>/`: its config, sandbox customizations, provider
 coordinates, and generated Slack manifests. The rest of the tree stays identical to
 upstream. See [`../deploy/layers/README.md`](../deploy/layers/README.md).
 
-For a new layer, the agent first asks the operator for Fly.io or AWS (the slug
+For a new layer, the operator selects Fly.io, AWS, or GCP (the slug
 is a local name derived from the organization, not globally unique), then runs:
 
 ```bash
-node cli/bin/deskmate.ts init deploy/layers/<org> --org <slug> --target <fly-or-aws>
+node cli/bin/deskmate.ts init deploy/layers/<org> --org <slug> --target <fly-or-aws-or-gcp>
 ```
 
 Provider choice is part of initialization because it determines the config,
@@ -28,7 +28,7 @@ everything else. Drop `"auth"` from `services` to use an external identity
 provider instead; that provider must then register the exact
 `<publicUrl>/auth/callback` redirect.
 
-The installed package carries Fly and AWS provider templates and dispatches
+The installed package carries Fly, AWS, and GCP provider templates and dispatches
 their common lifecycle through the hosting-provider registry. Initialization
 does not create deployment CI, and the Deskmate source repository has no production
 deployment workflow.

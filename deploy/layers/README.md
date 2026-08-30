@@ -1,18 +1,17 @@
 # Organization layers
 
 This directory is where an organization's own deployment material lives when Deskmate is
-customized from a private fork: a standalone private repository whose history begins as
-a clone of Deskmate, in which core stays identical to upstream and everything
+customized in a standalone private repository based on Deskmate, in which core stays
+identical to upstream and everything
 organization-specific is confined here, under `deploy/layers/<org>/`.
 
 In upstream Deskmate this directory holds nothing but this file, and it stays that way. A layer
-belongs to one organization's private fork and never travels upstream. The `upstream-pr` skill
-enforces that boundary; the `update-deskmate` skill merges upstream changes in around it.
+belongs to one organization's private repository and never travels upstream.
 
 ## Creating a layer
 
 ```bash
-node cli/bin/deskmate.ts init deploy/layers/<org> --org <slug> --target <fly-or-aws>
+node cli/bin/deskmate.ts init deploy/layers/<org> --org <slug> --target <fly-or-aws-or-gcp>
 ```
 
 `deskmate init` writes the deployment config, the secret-name example, the sandbox and provider
