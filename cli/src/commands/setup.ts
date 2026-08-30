@@ -103,7 +103,7 @@ const PLAYBOOKS: Readonly<Record<string, readonly string[]>> = {
   ],
   PUBLIC_API_URL: [
     "The public URL agent sandboxes use to reach core's self-API. For docker this",
-    "is usually a tunnel or LAN address; for fly/aws it matches your apiUrl when",
+    "is usually a tunnel or LAN address; for fly/aws/gcp it matches your apiUrl when",
     "configured (split-hostname stacks), otherwise your publicUrl.",
   ],
   FLY_SANDBOX_API_TOKEN: [

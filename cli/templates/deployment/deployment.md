@@ -14,7 +14,7 @@ Before cloud mutation, read `deskmate.config.jsonc` when it exists. Its `target`
 the selected provider; confirm it with the operator and do not offer to change
 it in place. If the repository has not been initialized, collect:
 
-- hosting target: a cloud provider, Fly.io or AWS. Recommend Fly.io when the
+- hosting target: Fly.io, AWS, or GCP. Recommend Fly.io when the
   operator has no preference. The docker target runs everything on the local
   machine, is for a quick local test drive only, and is outside this
   workflow; never present it as the recommended path for a real deployment;
@@ -61,7 +61,7 @@ and the derived slug, install an exact CLI version, and initialize its root:
 
 ```bash
 npm exec --yes --package=@p4dx/deskmate@<exact-version> -- \
-  deskmate init . --org <slug> --target <fly-or-aws> --model-provider <provider>
+  deskmate init . --org <slug> --target <fly-or-aws-or-gcp> --model-provider <provider>
 npm install
 ```
 
@@ -188,7 +188,7 @@ alone, and `openrouter` needs the default `pi` harness.
 
 An operator may still prefer to hold the key centrally and rotate it from the
 Admin page. That is a deliberate choice, not the default: drop `modelProvider`
-from `deskmate.config.jsonc`, note in the handoff that the deployment has no base model
+from `deskmate.config.jsonc`, note in the deployment report that the deployment has no base model
 yet, and finish by walking them through Model provider on the Admin page. Never
 leave a deployment modelless without saying so.
 
@@ -197,7 +197,7 @@ preflight and setup order:
 
 - Fly.io: `.codex/skills/deploy-deskmate/references/fly.md`
 - AWS: `.codex/skills/deploy-deskmate/references/aws.md`
-- GCP (scaffolding-only this release): `.codex/skills/deploy-deskmate/references/gcp.md`
+- GCP: `.codex/skills/deploy-deskmate/references/gcp.md`
 
 ## 4. Deploy and prove the web surface
 
@@ -254,9 +254,9 @@ Create the app from the exact bot manifest URL. Enter its bot and app tokens in
 the Admin Slack card, invite it to a test channel, mention it, and receive a
 reply.
 
-## 7. Return the handoff
+## 7. Report deployment results
 
-Return:
+Report:
 
 - the web, Admin onboarding, Admin connectors, and user connections URLs;
 - how people sign in, and the Slack SSO app link when that is the route;

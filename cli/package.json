@@ -1,8 +1,8 @@
 {
   "name": "@p4dx/deskmate",
-  "version": "0.18.3",
+  "version": "0.18.4",
   "license": "MIT",
-  "description": "Control-plane CLI for portable Deskmate deployments on Docker, Fly, and AWS.",
+  "description": "Control-plane CLI for portable Deskmate deployments on Docker, Fly, AWS, and GCP.",
   "type": "module",
   "repository": {
     "type": "git",

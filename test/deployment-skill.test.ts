@@ -22,7 +22,7 @@ test("package-consumer deployment skill covers both self-owned providers and the
   const root = read("cli/templates/deployment/deployment.md");
   for (const phrase of [
     "Before cloud mutation",
-    "Fly.io or AWS",
+    "Fly.io, AWS, or GCP",
     "deployment repository",
     "npm ci",
     "slack render",

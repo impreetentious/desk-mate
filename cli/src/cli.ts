@@ -165,7 +165,7 @@ ${bold("DEVELOP (contributor)")} ${dim("— runs in the Deskmate repo")}
   help · version
 
 ${dim("target is set in the config: docker runs local containers, fly deploys Fly apps, aws deploys ECS, and gcp deploys Cloud Run.")}
-${dim("status/logs/down act on the configured target. Fly uses Fly Machines; AWS uses Lambda MicroVMs.")}
+${dim("status/logs/down act on the configured target. Fly uses Fly Machines; AWS uses Lambda MicroVMs; GCP uses Cloud Run and interim Fly Sprites sandboxes.")}
 `;
 
 const deploymentBackend = (ctx: DeployContext) => hostingProvider(ctx.target).createBackend(ctx);

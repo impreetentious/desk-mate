@@ -70,7 +70,7 @@ export function rmDir(path: string): void {
 
 export function writeConfig(
   dir: string,
-  config: Partial<DeskmateConfig> & { orgId: string; target: "docker" | "fly" | "aws" },
+  config: Partial<DeskmateConfig> & { orgId: string; target: DeskmateConfig["target"] },
 ): string {
   const full = {
     contract: 1,

@@ -1,6 +1,6 @@
 ---
 name: deploy-deskmate
-description: Deploy the Deskmate package from an organization-owned deployment repository to Fly.io or AWS, onboard an administrator, configure connectors, and optionally activate Slack.
+description: Deploy the Deskmate package from an organization-owned deployment repository to Fly.io, AWS, or GCP, onboard an administrator, configure connectors, and optionally activate Slack.
 ---
 
 # Deploy Deskmate
@@ -20,5 +20,5 @@ only once the operator has chosen the broker.
 
 Use the repository's installed `@p4dx/deskmate` dependency through
 `npm exec deskmate -- <command>`. Do not require or clone the Deskmate source repository.
-Do not stop at infrastructure health: complete the acceptance checks and return
-the handoff required by `deployment.md`.
+Do not stop at infrastructure health: complete the acceptance checks and report
+the deployment results required by `deployment.md`.
