@@ -1,5 +1,5 @@
 import { execFileSync, spawn, spawnSync } from "node:child_process";
-import { chmodSync, existsSync, openSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, openSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { CliError, errMessage } from "./log.ts";
 
@@ -231,7 +231,6 @@ export function writeEnvValue(path: string, key: string, value: string): void {
   if (!isEnvVarName(key)) throw new CliError(`${JSON.stringify(key)} is not a valid environment variable name`);
   if (/[\r\n]/.test(value)) throw new CliError(`the value for ${key} must be a single line`);
   const existing = existsSync(path);
-  const mode = existing ? statSync(path).mode & 0o777 : 0o600;
   const lines = existing ? readFileSync(path, "utf8").split("\n") : [];
   if (lines.at(-1) === "") lines.pop();
   const matches = (line: string): boolean => {
@@ -252,8 +251,8 @@ export function writeEnvValue(path: string, key: string, value: string): void {
     }
   }
   if (!placed) next.push(entry);
-  writeFileSync(path, `${next.join("\n")}\n`, { mode });
-  chmodSync(path, mode);
+  writeFileSync(path, `${next.join("\n")}\n`, { mode: 0o600 });
+  chmodSync(path, 0o600);
 }
 
 export function deploymentSecretValue(name: string, fileValue: string | undefined): string | undefined {

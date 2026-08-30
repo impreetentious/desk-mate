@@ -1,5 +1,7 @@
 import http from "node:http";
 import { spawn } from "node:child_process";
+import { chmodSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import manifest from "../test/live-slack/qa-driver.manifest.json" with { type: "json" };
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -38,7 +40,9 @@ async function main(): Promise<void> {
         });
         const resp = await fetch("https://slack.com/api/oauth.v2.access", { method: "POST", body });
         const data = (await resp.json()) as any;
-        if (!data.ok || !data.authed_user?.access_token) throw new Error(`oauth.v2.access: ${JSON.stringify(data)}`);
+        if (!data.ok || !data.authed_user?.access_token) {
+          throw new Error(`oauth.v2.access failed: ${String(data.error ?? "unknown_error")}`);
+        }
         res
           .writeHead(200, { "content-type": "text/html" })
           .end("<h2>Token captured — you can close this tab and return to the terminal.</h2>");
@@ -61,9 +65,12 @@ async function main(): Promise<void> {
     });
   });
 
-  console.log(`\n✅ user token for <@${token.user}> in ${token.team}:\n`);
-  console.log(token.token);
-  console.log(`\nSet it as LIVE_E2E_SLACK_QA_USER_TOKEN (first / QA human) or LIVE_E2E_ACTOR_TOKEN_<NAME> (an actor).`);
+  const output = resolve(process.env.SLACK_USER_TOKEN_OUT ?? ".generated/slack-user-token.env");
+  mkdirSync(dirname(output), { recursive: true, mode: 0o700 });
+  writeFileSync(output, `LIVE_E2E_SLACK_QA_USER_TOKEN=${token.token}\n`, { mode: 0o600 });
+  chmodSync(output, 0o600);
+  console.log(`\nCaptured a user token for <@${token.user}> in ${token.team}.`);
+  console.log(`Saved it to ${output} (mode 0600); the token was not printed.`);
 }
 
 main().catch((err) => {

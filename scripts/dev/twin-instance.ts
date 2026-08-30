@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { provisionTwinEnvironment, teardownTwinEnvironment } from "../../test/live-slack/arga-provision.ts";
 import { readEnvFile } from "./lib/util.ts";
@@ -15,13 +15,15 @@ function loadEnvFile(): Record<string, string> {
 
 async function up(): Promise<void> {
   if (existsSync(envFile)) throw new Error(`.twin-instance/ already exists — run "down" first`);
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  chmodSync(dir, 0o700);
   const bootEnv = await provisionTwinEnvironment(480);
   writeFileSync(
     envFile,
     Object.entries(bootEnv)
       .map(([k, v]) => `${k}=${v}`)
       .join("\n") + "\n",
+    { mode: 0o600 },
   );
 
   const boot = spawnSync(process.execPath, [join(root, "cli/bin/deskmate.ts"), "dev", "--ci", "up"], {
@@ -47,7 +49,7 @@ async function up(): Promise<void> {
 
   console.log(`\ntwin dev instance up — workspace ${bootEnv.SLACK_API_URL}`);
   console.log(`  dashboard (post as any seeded user): ${bootEnv.SLACK_API_URL}`);
-  console.log(`  qa token: ${bootEnv.SLACK_QA_USER_TOKEN}`);
+  console.log(`  credentials: ${envFile} (mode 0600)`);
   console.log(`  tear down: node scripts/dev/twin-instance.ts down`);
 }
 

@@ -1,4 +1,5 @@
-import { appendFileSync } from "node:fs";
+import { appendFileSync, chmodSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { provisionSlackTwin, seedTwinUsers, teardownTwin, TwinAdmin } from "./arga.ts";
 import { SlackClient } from "./slack.ts";
@@ -26,7 +27,11 @@ function emitEnv(pairs: Record<string, string>): void {
     appendFileSync(process.env.GITHUB_ENV, lines.join("\n") + "\n");
     console.log(`wrote ${lines.length} vars to GITHUB_ENV`);
   } else {
-    for (const [k, v] of Object.entries(pairs)) console.log(`export ${k}=${JSON.stringify(v)}`);
+    const output = resolve(process.env.ARGA_ENV_OUT ?? ".generated/arga-twin.env");
+    mkdirSync(dirname(output), { recursive: true, mode: 0o700 });
+    writeFileSync(output, lines.join("\n") + "\n", { mode: 0o600 });
+    chmodSync(output, 0o600);
+    console.log(`wrote ${lines.length} vars to ${output} (mode 0600)`);
   }
 }
 

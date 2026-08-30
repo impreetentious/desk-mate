@@ -85,14 +85,14 @@ test("writeEnvValue collapses duplicate occurrences into the first", (t) => {
   assert.equal(readFileSync(file, "utf8"), "A=1\nB=only\nC=3\n");
 });
 
-test("writeEnvValue preserves the existing file mode", (t) => {
+test("writeEnvValue tightens an existing file to 0600", (t) => {
   const dir = mkdtempSync(join(tmpdir(), "deskmate-env-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const file = join(dir, ".env");
   writeFileSync(file, "A=1\n", { mode: 0o640 });
   chmodSync(file, 0o640);
   writeEnvValue(file, "A", "2");
-  assert.equal(statSync(file).mode & 0o777, 0o640);
+  assert.equal(statSync(file).mode & 0o777, 0o600);
   assert.equal(readFileSync(file, "utf8"), "A=2\n");
 });
 
