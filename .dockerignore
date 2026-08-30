@@ -13,7 +13,7 @@ data
 **/*.tfplan
 *.log
 .DS_Store
-.context
+.twin-instance
 .env
 *.env
 .env.local

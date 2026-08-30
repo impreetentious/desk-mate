@@ -13,11 +13,10 @@ data/
 .claude/settings.local.json
 .gstack/
 .ci-instance/
+.twin-instance/
 test/live-slack/out/
 .generated/
 __pycache__/
 *.pyc
 
 docs/master.html
-
-.context/

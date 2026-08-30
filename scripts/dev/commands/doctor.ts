@@ -34,7 +34,7 @@ export async function runDoctor(opts: { json: boolean; fix: boolean; store: stri
     ok: slots.length > 0,
     severity: "critical",
     detail: slots.length ? `${slots.length} pool slot(s) configured` : "no poolN.env files in the pool store",
-    remedy: slots.length ? undefined : "add poolN.env files (see the dev-instance skill runbook)",
+    remedy: slots.length ? undefined : `add poolN.env files under ${opts.store}`,
   });
 
   for (const slot of slots) {
