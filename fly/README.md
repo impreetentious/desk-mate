@@ -8,9 +8,9 @@ machines over the [Fly Machines API](https://fly.io/docs/machines/api/). The VM 
 is the writable source of truth for this backend: the **read-only** mount layers
 (org/team/granted scopes) are materialized into it from their owners' stores each turn,
 while the **writable** layer lives on the persistent disk and is never re-seeded from
-the store (cold-start recovery is `backupComputer`'s object-store backup). `snapshotWritable`
-remains intentionally a no-op because the legacy per-turn workspace snapshot is the wrong
-abstraction for a resident computer.
+the store (cold-start recovery is `backupComputer`'s object-store backup).
+`snapshotWritable` is intentionally a no-op because a resident computer's disk is the
+writable source of truth.
 
 Because the snapshot is a no-op, the `write` primitive **dual-writes** each explicit write
 to the durable workspace store (gated by the orchestrator's `persistWritesToStore`). A
@@ -48,7 +48,7 @@ workspace store and do not support resident machine auth.
 
 Each scope's `$HOME` (`/root`) is a **per-scope Fly volume** (`home_<scope>`, sized by
 `FLY_VOLUME_GB`, default 3 GiB), created on first provision and mounted into the machine.
-This separates two lifecycles that used to be fused in one rootfs:
+The volume separates two lifecycles:
 
 - **Durable agent state** (resident creds and anything written under `$HOME`) lives on the
   volume and survives a rootfs swap — like a laptop's home dir surviving an OS upgrade.
@@ -56,20 +56,20 @@ This separates two lifecycles that used to be fused in one rootfs:
   `/opt/agent-venv`) can be replaced freely. (`pip install`s land in that venv, so they reset
   on an image recreate — an accepted, rare cost.)
 
-So a new base image rolls out **without a manual `fly machine destroy`**. Core receives the
+Base-image upgrades roll out **without a manual `fly machine destroy`**. Core receives the
 target image as `FLY_BASE_IMAGE`, which `deskmate sandbox publish` pins by digest. On a scope's next
 provision, `FlySandbox.ensureMachine` compares the machine's own image reference to the target
 and, if they differ, recreates the machine **keeping its volume** (`coldStart=false`, home
 intact — no restore needed). A machine that predates volumes (no `/root` mount) is
 migrated once: it's recreated with a fresh volume as a cold start, so the orchestrator
 restores the object-store backup into it. Because that backup **excludes `~/.aws`** (see
-below), the agent re-auths (`aws sso login`) once after the legacy migration.
+below), resident AWS authentication must be established again after migration.
 
 The Python venv is **baked into the rootfs at `/opt/agent-venv`** (on PATH), so it's present
 the instant the machine boots — no per-scope bootstrap. It lives at `/opt`, not `/root`,
-because `/root` is the per-scope volume mount that would SHADOW anything baked under it. This
-removes the old first-provision `python -m venv` + network pip step (~5-15s on every cold
-start) and keeps the venv off the home-volume backup. Trade-off: `pip install`s land in the
+because `/root` is the per-scope volume mount that would shadow anything baked under it. This
+keeps startup independent of a network install and keeps the venv off the home-volume
+backup. Trade-off: `pip install`s land in the
 rootfs venv, so they reset when a scope's machine is recreated (image-version bump / reap).
 
 ## Backup exclusions
@@ -175,28 +175,7 @@ These are machine credentials for native CLIs such as `aws`, not egress proxy to
 For resident X tooling use the same prefix for native tool env, for example
 `FLY_RESIDENT_ENV_X_BEARER_TOKEN` for `x-api`.
 
-## Smoke test
-
-```bash
-FLY_API_TOKEN="$(fly tokens create deploy -a "$FLY_SANDBOX_APP_NAME")" npm run smoke:fly
-```
-
-For image-resident X helper readiness:
-
-```bash
-FLY_API_TOKEN=... npm run smoke:x
-```
-
-This verifies `x-api` is on PATH and reports `missing_auth=auth_missing` when no
-resident X token is installed. Add `X_SMOKE_REQUIRE_AUTH=1` after configuring
-`X_BEARER_TOKEN` / `X_ACCESS_TOKEN`, or `X_SMOKE_REQUIRE_FIREHOSE=1` when a vendored
-`x-firehose` binary should be present.
-
-The smoke test uses a timestamped personal smoke-test scope, writes
-workspace and resident-home state, backs it up, deletes the Fly machine, recreates it,
-restores the backup, verifies `.aws/*` stayed excluded, then deletes the smoke
-machine. Add `SNAPSHOT_STORE=s3 S3_BUCKET=...` to exercise the real S3 object store;
-without those vars it uses the same backup-store code over an in-memory blob store.
+## Git CLI smoke test
 
 For GitHub/GitLab resident CLI readiness:
 

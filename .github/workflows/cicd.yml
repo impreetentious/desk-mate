@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: cicd-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -50,15 +50,33 @@ jobs:
           CORE_TEST_SHARD: ${{ matrix.shard }}/5
         run: npm run test:root:shard
 
+  core-e2e:
+    name: Core HTTP e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install
+        run: npm ci
+      - name: HTTP e2e tests
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm run test:e2e
+
   core:
     name: Core
     runs-on: ubuntu-latest
     needs:
       - core-typecheck
       - core-tests
+      - core-e2e
     steps:
       - name: Core checks passed
-        run: echo "Core typecheck and root test shards passed."
+        run: echo "Core typecheck, root test shards, and HTTP e2e tests passed."
 
   cli:
     name: CLI
@@ -138,6 +156,8 @@ jobs:
         run: |
           npm ci
           npm ci --prefix plugins/web-ui
+      - name: Version coherence
+        run: npm run check:version
       - name: Formatting
         run: npm run format:check
       - name: Lint whole repo, incl. plugins

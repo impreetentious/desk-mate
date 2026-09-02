@@ -97,8 +97,9 @@ known limitations.
 
 ## Deploy it for your org
 
-Deploying does not require a copy of this repository. `deskmate init` materializes a
-deployment directory from the published package:
+Deploying does not require a copy of this repository. The CLI supports local Docker
+deployments and hosted deployments on Fly.io, AWS, and GCP. `deskmate init`
+materializes a deployment directory from the published package; this example selects AWS:
 
 ```bash
 npm exec --yes --package=@p4dx/deskmate@<exact-version> -- \
@@ -107,45 +108,23 @@ npm exec --yes --package=@p4dx/deskmate@<exact-version> -- \
 
 Initialization materializes a deployment skill for an agent and walks through
 infrastructure, web sign-in, connector credentials, optional Slack access, deployment,
-and live verification — no source checkout required. Each deployment runs in the
+and live verification — no source checkout required. Each hosted deployment runs in the
 operator's own cloud account; initialization does not generate or enable deployment CI,
 and this repository has no production deployment workflow. See
 [`deployment.md`](./deployment.md) for the details.
 
-## Customize it from a private fork
+## Customize it in a private repository
 
-An organization that wants to customize its deployment keeps a private fork — a
-standalone private repository whose history begins as a clone of this one:
+Organizations that need deployment-specific code can create a standalone private
+repository from this source. Use a normal clone rather than GitHub's Fork button: forks
+of public repositories cannot be made private and share their object network with the
+upstream repository.
 
-```bash
-git clone https://github.com/ItsMonarch04/desk-mate.git my-org-agent
-cd my-org-agent
-git remote rename origin upstream
-git remote add origin https://github.com/<your-org>/my-org-agent.git
-git push -u origin main
-```
-
-Create the private fork with a plain clone, as shown above, and never with GitHub's fork
-feature. The word "fork" here names the concept — a downstream copy that diverges
-deliberately and merges from upstream — not GitHub's Fork button. A GitHub fork inherits
-the visibility of the repository it came from, so a fork of a public repository cannot be
-made private. A GitHub fork also shares one object network with the repository it came
-from, so commits pushed to the fork stay fetchable by SHA from the public side. Many
-organizations disallow forking private repositories as well. A plain clone has none of
-these problems, and it costs one thing: the clone is an ordinary repository, so upstream's
-CI workflows run live in your own account. Expect to supply the secrets those workflows
-need, or disable the ones you do not want running.
-
-Everything specific to your organization goes in `deploy/layers/<org>/` — config, sandbox
-tools and skills, plugin images, infrastructure — in the same shape `deskmate init` produces. See
-[`deploy/layers/README.md`](./deploy/layers/README.md). Core stays byte-identical to
-upstream, which is what keeps merges small.
-
-Two skills maintain the boundary in both directions. `update-deskmate` merges upstream Deskmate into
-the private fork and opens the sync PR; `upstream-pr` sends an organization-agnostic fix back to
-Deskmate, cutting the branch from `upstream/main` and checking the outgoing diff, commit
-messages, and screenshots for organization identifiers before it pushes. Nothing under
-`deploy/layers/` ever travels upstream.
+Keep organization-specific config, sandbox tools and skills, plugin images, and
+infrastructure under `deploy/layers/<org>/`, in the shape produced by `deskmate init`.
+See [`deploy/layers/README.md`](./deploy/layers/README.md). Keeping core unchanged makes
+upstream updates easier to review and prevents deployment material from entering the
+public repository.
 
 ## Going deeper
 
@@ -162,4 +141,4 @@ Deskmate is available under the [MIT License](./LICENSE).
 
 ---
 
-**Version:** v0.18.5
+**Version:** v0.18.6

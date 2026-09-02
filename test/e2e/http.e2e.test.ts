@@ -13,6 +13,11 @@ import { scopeId } from "../../src/types.ts";
 import { testConfig } from "../support/test-config.ts";
 
 const NO_KEY = !process.env.ANTHROPIC_API_KEY;
+// Locally the live suite skips without a key; in CI a skip would report the HTTP e2e gate green
+// with nothing run, so a missing key fails the file instead.
+if (NO_KEY && process.env.CI) {
+  throw new Error("test:e2e runs live model turns: set ANTHROPIC_API_KEY for the CI job");
+}
 
 describe("HTTP e2e (live Pi over the API)", { skip: NO_KEY ? "set ANTHROPIC_API_KEY" : false }, () => {
   let server: Server;

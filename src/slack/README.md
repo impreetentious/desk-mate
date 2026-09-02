@@ -21,7 +21,7 @@ Slack  ⇄ (WebSocket)  slack surface (in core)  ── direct calls ──▶  
 
 (Socket Mode is already enabled by the manifest. No request URLs to configure.)
 
-> **Running locally alongside another developer? Each dev needs their OWN app.**
+> **Running locally alongside another developer? Each developer needs a separate app.**
 > See [Local dev with multiple developers](#local-dev-with-multiple-developers)
 > below — set the manifest `name`/`display_name` to `agent-<yourname>` before
 > creating, so you don't share a bot identity.
@@ -31,7 +31,7 @@ Slack  ⇄ (WebSocket)  slack surface (in core)  ── direct calls ──▶  
 One process — core boots the Slack surface itself when the tokens are in its env:
 
 ```bash
-cd ~/Programming/deskmate
+cd desk-mate
 nvm use
 HARNESS=claude ORG_ID=acme ANTHROPIC_API_KEY=… \
 SLACK_BOT_TOKEN=xoxb-… SLACK_APP_TOKEN=xapp-… \
@@ -91,7 +91,7 @@ the tokens, core simply runs without Slack.
   message ts it actually showed this turn so a stale/forged id is dropped rather than reacting to the
   wrong message. The id is short (~10 chars vs a 17-char raw timestamp) and STABLE (it always points
   at the same message, so persisting it never drifts,
-  unlike the old positional `[N]` handle). A raw `@ <ts>` still works for back-compat. In-thread
+  rather than a position in the current window). A raw `@ <ts>` also works. In-thread
   replies are tagged `(reply)` so the agent sees thread structure, and the parent of any listed reply
   is pulled in alongside it (`recentWindow`/`arrangeForDisplay`).
   The **bot token never leaves the plugin**. Names are normalized against the
@@ -145,39 +145,9 @@ the tokens, core simply runs without Slack.
   (ephemeral) — and uploads no file there — internal-only (spec §9). Group DMs (mpim) aren't
   handled yet (it says so out-of-band rather than mis-scoping them).
 
-> **Re-install after upgrading to file sharing.** The `files:read` / `files:write` scopes
-> were added to `manifest.json`; update the app's scopes (or re-create from the manifest)
-> and **reinstall to the workspace** so Slack grants them, then restart the plugin.
-
-> **Re-install after upgrading to emoji reactions.** The `reactions:write` scope was added to
-> `manifest.json`. Update the app from the manifest and **reinstall to the workspace** so Slack
-> grants it, then restart the plugin — otherwise the agent's reactions are silently dropped
-> (logged as a missing-scope hint).
-
-> **Re-install after upgrading to inbound reactions.** The `reactions:read` scope and the
-> `reaction_added` / `reaction_removed` events were added to `manifest.json`. Update the app from
-> the manifest and **reinstall to the workspace** (re-subscribing the events), then restart the
-> plugin — otherwise the bot won't receive reactions others add, and `reactions.get` reads fail.
-
-> **Re-install after upgrading to workspace emoji.** The `emoji:read` scope lets the
-> acknowledgment picker include custom workspace emoji. Update the app from the manifest and
-> **reinstall to the workspace**, then restart the plugin.
-
-> **Re-install after upgrading to thread-follow.** The `channels:history` / `groups:history`
-> scopes and the `message.channels` / `message.groups` events were added to `manifest.json`.
-> Update the app from the manifest and **reinstall to the workspace** (and re-subscribe the
-> events), then restart the plugin — otherwise the bot won't see non-mention thread replies.
-
-> **Re-install after upgrading to approval buttons.** The manifest now enables Slack
-> interactivity so Block Kit button clicks are delivered as Socket Mode `block_actions`
-> payloads. No public request URL is needed, but the app must be updated from the manifest
-> and reinstalled.
-
-> **Re-install after upgrading to group-DM thread-follow.** The `message.mpim` event and the
-> `mpim:write` / `mpim:history` scopes were added to `manifest.json`. Update the app from the
-> manifest and **reinstall to the workspace** (re-subscribing the events), then restart the
-> plugin — otherwise the bot won't see non-mention messages in **group DMs (mpims)**, so it only
-> ever responds there when explicitly @-mentioned.
+Whenever the tracked manifest changes its scopes, event subscriptions, or interactivity
+settings, apply the current [`manifest.json`](./manifest.json), reinstall the app to the
+workspace so Slack grants the changes, and restart Deskmate.
 
 ## Local dev with multiple developers
 

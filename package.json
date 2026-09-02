@@ -1,10 +1,10 @@
 {
   "name": "deskmate",
-  "version": "0.18.5",
+  "version": "0.18.6",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Headless core for the shared org agent (managed-agents architecture).",
+  "description": "Multiplayer agent harness for work, with Slack and web surfaces.",
   "engines": {
     "node": ">=24.15.0",
     "npm": ">=11.10.0"

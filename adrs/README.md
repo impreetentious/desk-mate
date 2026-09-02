@@ -1,14 +1,12 @@
 # Architecture decision records
 
-Change proposals land here before code does. [`CONTRIBUTING.md`](../CONTRIBUTING.md) asks
-for human-written prose rather than a formal template — describe the change the way you
-would to a coworker, in a `.txt` or `.md` file named for what it decides.
+Use this directory for decisions that materially change Deskmate's architecture,
+security boundaries, or public contracts. Each record should state the context, the
+decision, its consequences, and any alternatives considered.
 
-A record that is later superseded gets marked as superseded rather than deleted, so the
-reasoning behind a choice outlives the discussion that produced it.
+Name records for the decision they capture and include a status such as proposed,
+accepted, superseded, or deprecated. Mark superseded records instead of deleting them so
+the reasoning remains available.
 
-The directory is empty because the architecture predates the convention. The decisions it
-already embodies — the harness abstraction, the scope model, the sandbox substrate, the
-three security postures — are described in [`README.md`](../README.md) and
-[`SECURITY.md`](../SECURITY.md), and are worth writing up here as the reasoning gets
-revisited.
+Existing architecture is summarized in [`README.md`](../README.md) and the trust model
+in [`SECURITY.md`](../SECURITY.md).
