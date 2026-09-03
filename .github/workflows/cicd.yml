@@ -6,6 +6,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# CI builds and runs branch code, including from pull requests. No job here writes to the
+# repository, a registry, or a release, so the token stays read-only rather than inheriting
+# whatever the repository default grants.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}

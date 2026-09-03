@@ -548,6 +548,17 @@ function modelProviderEnvStrict(env: NodeJS.ProcessEnv): ModelProvider | undefin
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
+  // Reject unrecognized backend names before the secret gates run, so a wrong value
+  // names itself instead of surfacing as a missing secret for a backend that no
+  // longer exists (SANDBOX_BACKEND=fly used to report a missing FLY_API_TOKEN).
+  const sandboxBackend = sandboxBackendEnvStrict(env.SANDBOX_BACKEND);
+  const secondaryRaw = env.SANDBOX_SECONDARY_BACKEND?.trim();
+  let sandboxSecondaryBackend: Config["sandboxSecondaryBackend"];
+  if (secondaryRaw) {
+    const secondary = sandboxBackendEnvStrict(secondaryRaw, "SANDBOX_SECONDARY_BACKEND");
+    if (secondary === sandboxBackend) throw new Error("SANDBOX_SECONDARY_BACKEND must differ from SANDBOX_BACKEND.");
+    sandboxSecondaryBackend = secondary;
+  }
   const missingSecrets = validateCoreSecretEnv(env);
   if (missingSecrets.length) {
     throw new Error(`missing or insecure required core secrets: ${missingSecrets.join(", ")}`);
@@ -575,14 +586,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const dataDir = resolve(env.DATA_DIR ?? "./data");
   if (env.NODE_ENV === "production" && !env.SANDBOX_BACKEND?.trim()) {
     throw new Error("SANDBOX_BACKEND must be set explicitly in production — use sprites, aws, or local.");
-  }
-  const sandboxBackend = sandboxBackendEnvStrict(env.SANDBOX_BACKEND);
-  const secondaryRaw = env.SANDBOX_SECONDARY_BACKEND?.trim();
-  let sandboxSecondaryBackend: Config["sandboxSecondaryBackend"];
-  if (secondaryRaw) {
-    const secondary = sandboxBackendEnvStrict(secondaryRaw, "SANDBOX_SECONDARY_BACKEND");
-    if (secondary === sandboxBackend) throw new Error("SANDBOX_SECONDARY_BACKEND must differ from SANDBOX_BACKEND.");
-    sandboxSecondaryBackend = secondary;
   }
   const securityScreenBackend = securityScreenBackendEnvStrict(env.SECURITY_SCREEN_BACKEND);
   const proxyProvider = env.SECURITY_SCREEN_PROXY_PROVIDER?.trim();

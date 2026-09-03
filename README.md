@@ -128,11 +128,14 @@ public repository.
 
 ## Going deeper
 
-- [`docs/getting-started.md`](./docs/getting-started.md) — first run, end to end
+- [`docs/getting-started.md`](./docs/getting-started.md) — standing up a deployment for an org
 - [`cli/README.md`](./cli/README.md) — the `deskmate` CLI and the deployment directory contract
 - [`docs/deploy-directory.md`](./docs/deploy-directory.md) — the deployment directory in full
-- [`.env.example`](./.env.example) — every knob, documented in place
-- [`plugins/`](./plugins) — the surfaces (Slack, web UI, admin, portal)
+- [`.env.example`](./.env.example) — a starting `.env` for a local run; core reads many more
+  variables than it lists, and `deskmate init` computes the set a deployment actually needs
+- [`plugins/`](./plugins) — the HTTP surfaces (web UI, admin, portal, sign-in broker)
+- [`src/slack/`](./src/slack) — the Slack surface, an in-process plugin rather than a service
+- [`fly/README.md`](./fly/README.md) — the sandbox base image and the agent-computer backends
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — how to propose a change
 
 ## License
@@ -141,4 +144,4 @@ Deskmate is available under the [MIT License](./LICENSE).
 
 ---
 
-**Version:** v0.18.6
+**Version:** v0.19.0

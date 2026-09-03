@@ -217,6 +217,21 @@ test("sandbox backend is parsed once before production backend guards", () => {
   );
 });
 
+test("a retired backend name reports itself rather than the secret gate it still trips", () => {
+  // "fly" was the Fly Machines backend before Sprites replaced it. Its FLY_API_TOKEN
+  // secret gate outlived it, and used to answer this value with "missing or insecure
+  // required core secrets: FLY_API_TOKEN" — sending the operator after a token for a
+  // backend that no longer exists instead of naming the unusable value.
+  assert.throws(
+    () => loadConfig({ SANDBOX_BACKEND: "fly" }),
+    /SANDBOX_BACKEND="fly" is not recognized — use aws, local, or sprites/,
+  );
+  assert.throws(
+    () => loadConfig({ SANDBOX_BACKEND: "local", SANDBOX_SECONDARY_BACKEND: "fly" }),
+    /SANDBOX_SECONDARY_BACKEND="fly" is not recognized/,
+  );
+});
+
 test("production refuses missing, placeholder, or weak signing keys", () => {
   assert.throws(
     () => loadConfig({ NODE_ENV: "production" }),

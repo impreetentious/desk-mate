@@ -19,7 +19,7 @@ if (NO_KEY && process.env.CI) {
   throw new Error("test:e2e runs live model turns: set ANTHROPIC_API_KEY for the CI job");
 }
 
-describe("HTTP e2e (live Pi over the API)", { skip: NO_KEY ? "set ANTHROPIC_API_KEY" : false }, () => {
+describe("HTTP e2e (live model over the API)", { skip: NO_KEY ? "set ANTHROPIC_API_KEY" : false }, () => {
   let server: Server;
   let base: string;
 

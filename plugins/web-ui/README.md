@@ -1,15 +1,13 @@
 # Web UI plugin
 
 An end-user web surface with a custom ChatGPT/Claude-style chat shell, stitched to the
-platform core. It still uses Pi's `Agent` state machine and selected Pi web utilities
-for markdown, attachment loading, and model metadata, but the visible conversation UI is
-owned by this plugin. Two processes:
+platform core. Two processes:
 
 - **A zero-dep `node:http` server** (`server/index.ts`) — holds the signed-in principal
   in an `HttpOnly` cookie, injects it as the turn's actor, and proxies a small set of
   `/api/*` routes to the core (chat turns, unified history, cron management, and more). It never imports the core and never sends a model/API key to the browser.
 - **A Vite-bundled front-end** (`src/`) — a custom Lit shell + transcript + composer.
-  Pi's `Agent` LLM-call boundary (`streamFn`) is swapped for a bridge to the core.
+  The chat state machine's LLM-call boundary (`streamFn`) is a bridge to the core.
   It `POST`s the turn (`POST /v1/turns?async=1`), then watches the in-flight reply over
   **SSE** (`GET /api/runs/:id/events`, relayed from the core's `partial`) so tokens are
   pushed as they arrive instead of discovered on the next poll tick. It falls back to
@@ -49,8 +47,8 @@ and `CORE_SIGNING_SECRET` (same value as the core when source-auth is enabled).
   serviceable for the approved harnesses),
   explicit **effort selector** (`low|medium|high|xhigh|max|ultracode|auto`), **Fast mode**
   toggle, attachments, streaming partials, and a theme toggle.
-  The UI drives Pi's `Agent` with a custom `streamFn` (`src/core-bridge.ts`) instead of
-  mounting Pi's stock `AgentInterface`.
+  The UI drives its own `Agent` (`src/agent.ts`) through a custom `streamFn`
+  (`src/core-bridge.ts`) that posts to the core rather than to a provider.
 - **Slash-command skill picker** — type `/` at the start of the composer for a Codex-style
   autofill of the **skills** available to you (B6): icon · name · description · scope, with the
   typed letters emboldened. Arrow/Tab/Enter to choose (it inserts `/<name> `), Esc/click-out to
@@ -59,9 +57,9 @@ and `CORE_SIGNING_SECRET` (same value as the core when source-auth is enabled).
   (→ core `GET /v1/skills?principalId=`, resolved by `app.listVisibleSkills`). The skill _body_
   never reaches the browser; only name/description/scope do.
 - **Functional selectors** — the chosen model + effort + Fast mode ride along on each turn
-  (`POST /v1/turns` `model`/`thinkingLevel`/`fastMode`); the Pi harness applies them
-  server-side, bypassing Pi's stale thinking-level clamp for newer effort values and falling
-  back to its default on any unknown value. Attachments are forwarded as `IncomingAttachment`s
+  (`POST /v1/turns` `model`/`thinkingLevel`/`fastMode`); the core's harness applies them
+  server-side, mapping the effort to the values that harness supports and falling back to its
+  default on any it does not. Attachments are forwarded as `IncomingAttachment`s
   and materialized into the agent's sandbox inbox (same path as Slack file shares).
 - **Unified history** — every session you participated in (DMs, channels, web), via
   `GET /v1/sessions?principalId=`. The same person sees the same history here and in Slack
@@ -129,9 +127,10 @@ and `CORE_SIGNING_SECRET` (same value as the core when source-auth is enabled).
   the three primitives + memory + audit) runs server-side in the core's sandbox. The model
   picker only expresses a _preference_ the core honors within its policy floor — keys, egress,
   and tools stay server-side.
-- Pi's client-side artifacts / JavaScript REPL are not enabled (tools run server-side).
-- The custom transcript renders from Pi `Agent` lifecycle events and `waitForIdle()`, so
-  in-place streaming mutations are reflected without depending on Pi's stock chat renderer.
+- Client-side artifacts and a browser JavaScript REPL are not enabled (tools run server-side).
+- The custom transcript renders from `Agent` lifecycle events and `waitForIdle()`, so
+  in-place streaming mutations are reflected without a separate chat renderer.
 
-This is a **surface plugin**: it carries its own front-end deps (Vite, lit, pi-web-ui) and
-runs as a separate process. The zero-runtime-dep core is untouched.
+This is a **surface plugin**: it carries its own front-end deps (Vite, Lit, and the
+`mini-lit` components) and runs as a separate process. The zero-runtime-dep core is
+untouched.

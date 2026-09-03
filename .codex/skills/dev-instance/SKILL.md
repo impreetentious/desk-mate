@@ -1,6 +1,6 @@
 ---
 name: dev-instance
-description: Run the current worktree as a production-shaped local dev instance — core, Slack, web UI, admin, portal, on a real Pi LLM + Postgres — reachable in Slack as your own bot. Each developer uses their own set of Slack apps from their own machine's pool store, so many worktrees (yours and a teammate's) can run reachable at once without colliding. Use when asked to /dev-instance, "spin this up so I can QA it in Slack", or "let me test your branch end to end".
+description: Run the current worktree as a production-shaped local dev instance — core, Slack, web UI, admin, portal, on a real model + Postgres — reachable in Slack as your own bot. Each developer uses their own set of Slack apps from their own machine's pool store, so many worktrees (yours and a teammate's) can run reachable at once without colliding. Use when asked to /dev-instance, "spin this up so I can QA it in Slack", or "let me test your branch end to end".
 ---
 
 # dev-instance
