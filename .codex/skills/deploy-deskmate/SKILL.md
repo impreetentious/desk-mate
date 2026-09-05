@@ -6,7 +6,7 @@ description: Deploy the Deskmate package from an organization-owned repository i
 # Deploy Deskmate
 
 Read [`../../../deployment.md`](../../../deployment.md) completely and follow it
-as the authoritative workflow. Read only the selected provider reference. Read
+as the authoritative workflow — this file summarizes it, it does not replace it. Read only the selected provider reference. Read
 `references/email.md` before collecting secrets, because sign-in needs an email
 transport and one of its steps needs the operator's DNS. Read
 `references/slack.md` only when Slack is requested.

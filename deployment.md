@@ -1,6 +1,6 @@
 # Deploy Deskmate
 
-The deployment workflow shipped by this repository is
+This file is a pointer, not the procedure. The deployment workflow shipped by this repository is
 [`cli/templates/deployment/deployment.md`](cli/templates/deployment/deployment.md).
 Read it completely and follow it as the authoritative workflow.
 

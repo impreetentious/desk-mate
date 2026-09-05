@@ -55,7 +55,7 @@ test("the CLI package publishes publicly with provenance", () => {
   assert.equal(manifest.private, undefined);
   assert.equal(manifest.publishConfig?.access, "public");
   assert.equal(manifest.publishConfig?.provenance, true);
-  assert.equal(manifest.repository?.url, "git+https://github.com/ItsMonarch04/desk-mate.git");
+  assert.equal(manifest.repository?.url, "git+https://github.com/impreetentious/desk-mate.git");
   assert.equal(manifest.repository?.directory, "cli");
   assert.equal(manifest.scripts?.["verify:release"], undefined);
   assert.equal(existsSync("cli/scripts/verify-release-manifest.mjs"), false);

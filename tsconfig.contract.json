@@ -1,4 +1,5 @@
 {
   "extends": "./tsconfig.json",
+  // Narrow program for the CDK stacks: their types must not leak into the product build.
   "include": ["deploy/stacks/**/*.ts"]
 }

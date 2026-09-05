@@ -17,5 +17,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
+  // Product, tests, and build scripts share one program so a type break shows up once.
   "include": ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"]
 }

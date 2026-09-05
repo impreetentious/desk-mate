@@ -1,3 +1,4 @@
+// Runs inside the microVM. It holds no credentials of its own; everything arrives per-request.
 import http from "node:http";
 import { execFile } from "node:child_process";
 import fs from "node:fs";

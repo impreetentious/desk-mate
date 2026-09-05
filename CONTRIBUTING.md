@@ -11,4 +11,6 @@ Please do not have AI artificially expand what you'd like to do into a formal pr
 
 Submit changes as a PR adding a `.txt` or `.md` file to the [`adrs/`](./adrs/) folder.
 
+Contributions are accepted under the same AGPL-3.0-only terms the project ships under.
+
 PS: Report any security vulnerabilities privately — see [`SECURITY.md`](./SECURITY.md), not a public issue.

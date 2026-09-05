@@ -1,16 +1,16 @@
 {
   "name": "@p4dx/deskmate",
-  "version": "0.19.1",
-  "license": "MIT",
+  "version": "0.19.2",
+  "license": "AGPL-3.0-only",
   "description": "Control-plane CLI for portable Deskmate deployments on Docker, Fly, AWS, and GCP.",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ItsMonarch04/desk-mate.git",
+    "url": "git+https://github.com/impreetentious/desk-mate.git",
     "directory": "cli"
   },
-  "homepage": "https://github.com/ItsMonarch04/desk-mate/tree/main/cli#readme",
-  "bugs": "https://github.com/ItsMonarch04/desk-mate/issues",
+  "homepage": "https://github.com/impreetentious/desk-mate/tree/main/cli#readme",
+  "bugs": "https://github.com/impreetentious/desk-mate/issues",
   "publishConfig": {
     "access": "public",
     "provenance": true

@@ -1,7 +1,8 @@
 # Sandbox base image
 
 The Debian (glibc) + Node image the container-based agent computers are built from. CI
-publishes it as the `sandbox-base` image and `cli/manifest.json` pins it by digest.
+publishes it as the `sandbox-base` image and `cli/manifest.json` pins it by digest, so a
+rebuild cannot silently change what agents run inside.
 
 Two things consume it:
 

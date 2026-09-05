@@ -1,3 +1,4 @@
+# Generated or vendored — formatted by their own tooling, not by Prettier
 package-lock.json
 src/resolution/protocols/
 **/dist/

@@ -1,7 +1,7 @@
 # Admin plugin
 
 A minimal **admin surface** for the Deskmate — the operator/admin plane from
-spec §14, delivered as an _added_ plugin (like the Slack plugin). It is a separate
+spec §14, delivered as an _added_ plugin (like the Slack plugin). It ships disabled and is opted into per deployment. It is a separate
 process that talks to the core **only** over the admin governance API; the core has
 zero dependency on it. Don't run it and nothing about the core changes.
 

@@ -1,3 +1,4 @@
+# Single-container local runtime. Not a production topology.
 ARG BASE=deskmate-sandbox-base:dev
 FROM ${BASE}
 

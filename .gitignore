@@ -1,3 +1,4 @@
+# Dependencies and local runtime state
 node_modules/
 data/
 *.log

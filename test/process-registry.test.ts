@@ -93,8 +93,9 @@ for (const b of backends()) {
   });
 }
 
-const PG_URL = process.env.TEST_DATABASE_URL;
-test("[postgres] honors the registry contract (durable across a restart)", { skip: !PG_URL }, async () => {
+const PG_URL = process.env.DATABASE_URL;
+const skip = PG_URL ? false : "set DATABASE_URL (a Postgres) to run the process-registry tests";
+test("[postgres] honors the registry contract (durable across a restart)", { skip }, async () => {
   const reg = createPostgresProcessRegistry(PG_URL!);
   const scope = `pg-test-${Date.now()}`;
   try {

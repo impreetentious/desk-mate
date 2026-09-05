@@ -1,7 +1,7 @@
 # Architecture decision records
 
 Use this directory for decisions that materially change Deskmate's architecture,
-security boundaries, or public contracts. Each record should state the context, the
+security boundaries, or public contracts. Each record is append-only once merged. Each should state the context, the
 decision, its consequences, and any alternatives considered.
 
 Name records for the decision they capture and include a status such as proposed,

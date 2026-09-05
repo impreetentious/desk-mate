@@ -2,6 +2,8 @@ import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+// Flat config. Generated and build output are ignored here rather than in .eslintignore,
+// which flat config no longer reads.
 export default tseslint.config(
   {
     ignores: [

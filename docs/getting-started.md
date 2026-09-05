@@ -1,6 +1,6 @@
 # Deploy Deskmate for an organization
 
-Deploying Deskmate does not require a copy of this repository: `deskmate init` materializes a
+Deploying Deskmate does not require a copy of this repository, and never requires cloning it: `deskmate init` materializes a
 deployment directory from the published package, and the README section "Deploy it for
 your org" gives that path. An organization that wants to customize its deployment keeps
 a private repository based on Deskmate and puts everything specific to itself in one

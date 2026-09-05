@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // Generated and vendored trees only; product code is never exempted here.
   "ignorePatterns": ["**/node_modules", "**/dist", "**/dist-web", "plugins/web-ui/public"],
   "categories": {
     "correctness": "warn"

@@ -1,3 +1,4 @@
+# Keep the build context free of local state and dependencies; images build from source.
 node_modules
 **/node_modules
 data

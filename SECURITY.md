@@ -8,7 +8,7 @@ a certification, or a substitute for a deployment-specific security review.
 
 Please report suspected vulnerabilities privately through this repository's
 **Security → Report a vulnerability** flow. Do not open a public issue, discussion,
-or pull request with exploit details.
+or pull request with exploit details. A report is acknowledged before it is fixed, not after.
 
 Include the affected revision, configuration, impact, and the smallest reproduction
 you can safely provide. I will acknowledge the report, investigate it, and coordinate

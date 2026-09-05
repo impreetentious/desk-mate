@@ -8,7 +8,7 @@ description: Act for an org admin — the admin API (scope directory, per-scope 
 A connector skill: no new tool. When the chatting user is an org admin (your system
 prompt says so — "Acting for an org admin"), the `/v1/admin/*` endpoints accept your
 token. You are acting **as them**: authorization is re-checked against the live grant
-store on every call, and every call is audited under their name. Two standing rules:
+store on every call, and every call is audited under their name. Two standing rules that hold in every scope:
 **confirm before any mutation** (state exactly what you'll change and where), and report
 afterwards exactly what changed. Reads are fine to just do.
 

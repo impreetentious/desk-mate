@@ -1,6 +1,6 @@
 # Deployment templates
 
-The files under `deploy/` are service-image and Fly configuration templates used
+The files under `deploy/` are templates, not a deployment. They are service-image and Fly configuration templates used
 by the `deskmate` CLI. They are not a production deployment and contain no cloud
 account, workspace, or organization credentials.
 

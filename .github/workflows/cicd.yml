@@ -1,3 +1,4 @@
+# Build, test, and publish. Every job here runs on the same Node version as .node-version.
 name: CI
 
 on:
