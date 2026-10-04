@@ -1,6 +1,6 @@
 {
   "name": "deskmate-web-ui-plugin",
-  "version": "0.19.2",
+  "version": "0.19.3",
   "private": true,
   "type": "module",
   "description": "Web UI surface plugin for deskmate. Custom chat shell over a thin node:http transport that talks only to the core HTTP API.",
@@ -17,26 +17,26 @@
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
-    "@mariozechner/mini-lit": "^0.2.0",
+    "@mariozechner/mini-lit": "^0.2.1",
     "date-fns": "^4.4.0",
     "dockview-core": "^7.0.4",
-    "dompurify": "^3.4.12",
-    "jszip": "^3.10.1",
-    "lit": "^3.3.1",
-    "lru-cache": "^11.5.2",
+    "dompurify": "^3.4.16",
+    "jszip": "^3.10.2",
+    "lit": "^3.3.3",
+    "lru-cache": "^11.5.3",
     "lucide": "^0.544.0",
-    "marked": "^18.0.5",
-    "pdfjs-dist": "^5.4.394"
+    "marked": "^18.0.14",
+    "pdfjs-dist": "^6.3.289"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.0",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/jsdom": "^28.0.3",
-    "@types/node": "^24.0.0",
+    "@types/node": "^24.13.6",
     "jsdom": "^29.1.1",
     "katex": "^0.16.47",
-    "tailwindcss": "^4.3.0",
-    "typescript": "^5.8.2",
-    "vite": "^7.1.6"
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.6"
   },
   "overrides": {
     "@mariozechner/mini-lit": {

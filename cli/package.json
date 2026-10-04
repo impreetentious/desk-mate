@@ -1,6 +1,6 @@
 {
   "name": "@p4dx/deskmate",
-  "version": "0.19.2",
+  "version": "0.19.3",
   "license": "AGPL-3.0-only",
   "description": "Control-plane CLI for portable Deskmate deployments on Docker, Fly, AWS, and GCP.",
   "type": "module",
@@ -44,7 +44,7 @@
     "test:pack": "node --test test/package.test.ts"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "typescript": "^5.8.2"
+    "@types/node": "^24.13.6",
+    "typescript": "^5.9.3"
   }
 }

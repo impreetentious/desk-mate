@@ -191,8 +191,9 @@ function csvCell(value: string): string {
 async function extractPdf(buffer: ArrayBuffer, fileName: string): Promise<string | undefined> {
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
-  const doc = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(buffer) });
   try {
+    const doc = await loadingTask.promise;
     const pages: string[] = [`<pdf filename="${fileName}">`];
     for (let page = 1; page <= doc.numPages; page++) {
       const content = await (await doc.getPage(page)).getTextContent();
@@ -205,7 +206,7 @@ async function extractPdf(buffer: ArrayBuffer, fileName: string): Promise<string
     pages.push("</pdf>");
     return pages.join("\n");
   } finally {
-    await doc.destroy();
+    await loadingTask.destroy();
   }
 }
 

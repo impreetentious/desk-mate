@@ -1,6 +1,6 @@
 {
   "name": "deskmate-portal-plugin",
-  "version": "0.19.2",
+  "version": "0.19.3",
   "private": true,
   "type": "module",
   "description": "Public SSO front door and path-prefix reverse proxy to private web and admin surfaces.",
@@ -13,11 +13,11 @@
     "test": "node --test"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "typescript": "^5.8.2"
+    "@types/node": "^24.13.6",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "jose": "^6.2.3",
-    "lru-cache": "^11.5.2"
+    "jose": "^6.2.12",
+    "lru-cache": "^11.5.3"
   }
 }

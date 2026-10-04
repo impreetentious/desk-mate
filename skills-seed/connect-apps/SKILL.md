@@ -10,7 +10,7 @@ consent link they tap — you never see or enter their password. The live Connec
 the source of truth: offer only providers configured by the admin, and offer none when that list is
 empty. Mint a single-use link for the selected provider, then give the user the full URL to open:
 curl -sS -X POST "$AGENT_API_URL/v1/connectors/oauth/consent/mint" \
-      -H "X-Agent-Capability: $AGENT_OAUTH_CONSENT_TOKEN" -H 'content-type: application/json' \
+-H "X-Agent-Capability: $AGENT_OAUTH_CONSENT_TOKEN" -H 'content-type: application/json' \
 -d '{"provider":"<configured-provider>"}'
 
 - The response has `connectUrl` — give the user THAT exact URL (it is the full public tap-through
