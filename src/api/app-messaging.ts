@@ -186,7 +186,8 @@ export function createMessagingMethods(
     setCronRecipientConsent(id, recipientConsent) {
       return deps.crons.setRecipientConsent(id, recipientConsent);
     },
-    pendingDeliveries(type, claimMs) {
+    async pendingDeliveries(type, claimMs) {
+      await deps.drainRunDeliveries?.();
       return claimMs && claimMs > 0 ? deps.deliveries.claimPending(type, claimMs) : deps.deliveries.pending(type);
     },
     async enqueueDelivery(input) {

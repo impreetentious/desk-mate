@@ -1,3 +1,4 @@
+import { validateRunQuery, type RunQuery } from "../../../runs/run-store.ts";
 import { parseScopeId, type ScopeId } from "../../../types.ts";
 import { cacheHitRatio, isStablePrefixMiss, type TurnMetricSample } from "../../../admin/metrics-sink.ts";
 import { sendJson } from "../../http.ts";
@@ -12,6 +13,23 @@ const EGRESS_LIST_LIMIT = 1000;
 const RUNS_LIST_LIMIT = 200;
 const ERRORS_LIST_LIMIT = 200;
 const AUDIT_TAIL_LIMIT = 200;
+
+async function authorizedRunRefs(ctx: ApiCtx, scope: ScopeId, orgWide: boolean): Promise<string[] | undefined> {
+  if (orgWide) return undefined;
+  const refs = ((await ctx.deps.sessions?.listAll()) ?? []).filter((s) => s.scopeId === scope).map((s) => s.threadRef);
+  validateRunQuery({ threadRefs: refs });
+  return refs;
+}
+
+function runCursor(raw: string | null, scope: ScopeId): RunQuery["cursor"] {
+  if (!raw) return undefined;
+  if (!/^[A-Za-z0-9_-]+$/.test(raw) || raw.length > 2048) throw new Error("Invalid run cursor");
+  const parsed = JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
+  if (parsed.scope !== scope) throw new Error("Run cursor scope mismatch");
+  const cursor = { createdAt: parsed.createdAt, id: parsed.id };
+  validateRunQuery({ cursor });
+  return cursor;
+}
 
 function latencySummary(values: number[]): {
   count: number;
@@ -62,16 +80,9 @@ export async function metrics(ctx: ApiCtx): Promise<void> {
       return { day, turns: b.turns, ttftP50: t.p50, ttftP95: t.p95 };
     });
 
-  const allRuns = (await deps.runs?.list({ limit: METRICS_RUNS_SCAN_LIMIT })) ?? [];
-  const runScopes = orgWide
-    ? null
-    : new Map(
-        ((await deps.sessions?.sessionsByThreadRefs(allRuns.map((r) => r.sessionId))) ?? []).map((s) => [
-          s.threadRef,
-          s.scopeId,
-        ]),
-      );
-  const runs = allRuns.filter((r) => orgWide || runScopes!.get(r.sessionId) === scope);
+  const threadRefs = await authorizedRunRefs(ctx, scope, orgWide);
+  const runs = (await deps.runs?.list({ limit: METRICS_RUNS_SCAN_LIMIT, threadRefs })) ?? [];
+  const active = (await deps.runs?.activeCount(threadRefs)) ?? 0;
   const queueWait = latencySummary(runs.filter((r) => r.startedAt != null).map((r) => r.startedAt! - r.createdAt));
   const runLatency = latencySummary(
     runs.filter((r) => r.startedAt != null && r.finishedAt != null).map((r) => r.finishedAt! - r.startedAt!),
@@ -222,6 +233,21 @@ export async function metrics(ctx: ApiCtx): Promise<void> {
     runLatency,
     queueWait,
     throughput,
+    active,
+    coverage: {
+      metrics: {
+        sampled: true,
+        limit: METRICS_SCAN_LIMIT,
+        count: allSamples.length,
+        oldestAt: allSamples.length ? Math.min(...allSamples.map((s) => s.ts)) : null,
+      },
+      runs: {
+        sampled: true,
+        limit: METRICS_RUNS_SCAN_LIMIT,
+        count: runs.length,
+        oldestAt: runs.at(-1)?.createdAt ?? null,
+      },
+    },
     series,
     anatomy,
     cache,
@@ -274,11 +300,17 @@ export async function listAdminRuns(ctx: ApiCtx): Promise<void> {
   const { actor, scope } = authz;
   audit(deps, { principalId: actor.id, action: "runs.read", resource: "runs", scopeLabel: scope });
   const orgWide = parseScopeId(scope).kind === "org";
-  const rawRuns = (await deps.runs?.list({ limit: RUNS_LIST_LIMIT })) ?? [];
+  const threadRefs = await authorizedRunRefs(ctx, scope, orgWide);
+  let cursor: RunQuery["cursor"];
+  try {
+    cursor = runCursor(ctx.url.searchParams.get("cursor"), scope);
+  } catch {
+    return sendJson(res, 400, { error: "Invalid run cursor for this scope" });
+  }
+  const rawRuns = (await deps.runs?.list({ limit: RUNS_LIST_LIMIT, threadRefs, cursor })) ?? [];
   const byThread = new Map(
     ((await deps.sessions?.sessionsByThreadRefs(rawRuns.map((r) => r.sessionId))) ?? []).map((s) => [s.threadRef, s]),
   );
-  const ACTIVE = new Set(["pending", "running"]);
   const runs = rawRuns
     .map((r) => {
       const s = byThread.get(r.sessionId);
@@ -297,9 +329,20 @@ export async function listAdminRuns(ctx: ApiCtx): Promise<void> {
         finishedAt: r.finishedAt,
       };
     })
-    .filter((r) => orgWide || r.sessionScope === scope)
-    .sort((a, b) => Number(ACTIVE.has(b.status)) - Number(ACTIVE.has(a.status)) || b.createdAt - a.createdAt);
-  return sendJson(res, 200, { scopeId: scope, active: runs.filter((r) => ACTIVE.has(r.status)).length, runs });
+    .filter((r) => orgWide || r.sessionScope === scope);
+  const last = rawRuns.at(-1);
+  const nextCursor =
+    rawRuns.length === RUNS_LIST_LIMIT && last
+      ? Buffer.from(JSON.stringify({ scope, createdAt: last.createdAt, id: last.id })).toString("base64url")
+      : null;
+  return sendJson(res, 200, {
+    scopeId: scope,
+    active: (await deps.runs?.activeCount(threadRefs)) ?? 0,
+    runs,
+    nextCursor,
+    deliveryMarkers: await deps.runs?.deliveryStats(threadRefs),
+    coverage: { limit: RUNS_LIST_LIMIT, count: runs.length, hasMore: nextCursor !== null },
+  });
 }
 
 export async function listAdminErrors(ctx: ApiCtx): Promise<void> {

@@ -749,13 +749,15 @@ test("a failing background tick is logged, not swallowed", async (t) => {
   });
   scheduler.start(1000);
   t.mock.timers.tick(1000);
-  for (let i = 0; i < 50 && !logged.some((l) => l.includes("[scheduler] tick failed")); i++) {
+  for (let i = 0; i < 50 && !logged.some((l) => l.includes("[scheduler] job failed")); i++) {
     await new Promise((r) => setImmediate(r));
   }
   scheduler.stop();
   assert.ok(
-    logged.some((l) => l.includes("[scheduler] tick failed") && l.includes("boom")),
-    "the tick error must reach the log",
+    logged.some(
+      (l) => l.includes("[scheduler] job failed") && l.includes(cron.id) && l.includes("slot=1") && l.includes("boom"),
+    ),
+    "the job error must reach the log",
   );
   const after = await crons.get(cron.id);
   assert.equal(after?.fireLog?.length, 1);
@@ -887,4 +889,123 @@ test("queue mode: an authz-failed fire disables the cron but gives the slot back
   assert.equal(after.lastFiredAt, undefined, "the slot is not consumed by the authz failure");
   assert.equal(after.nextFireAt, 1, "a later re-enable still owes this fire");
   scheduler.stop();
+});
+
+test("fallback isolates job failures, maintains asks and rotates capped permanent failures", async (t) => {
+  t.mock.method(console, "error", () => {});
+  t.mock.method(console, "warn", () => {});
+  const crons = createCronStore();
+  const attempted: string[] = [];
+  let asks = 0;
+  for (let i = 0; i < 3; i++)
+    await crons.create({
+      schedule: { everyMs: 1000, firstFireAt: 1 },
+      action: `job-${i}`,
+      owner: "U1",
+      createdBy: "U1",
+      ownerScopeId: scopeId("channel", "C1"),
+    });
+  const scheduler = createScheduler({
+    crons,
+    deliveries: createDeliveryStore(),
+    idempotency: createIdempotencyStore(),
+    identity: createIdentityService(),
+    maxFiresPerTick: 2,
+    run: async (req) => {
+      attempted.push(req.text);
+      throw new Error("always fails");
+    },
+    sweepAsks: async () => {
+      asks++;
+    },
+  });
+  await scheduler.tick(10);
+  assert.equal(attempted.length, 2);
+  await scheduler.tick(10);
+  assert.equal(attempted.length, 4);
+  assert.equal(new Set(attempted).size, 3);
+  assert.equal(asks, 2);
+  for (const cron of await crons.list()) assert.equal(cron.lastFiredAt, undefined);
+});
+
+test("fallback isolates fire recording/marking failures and maintenance still runs after query failures", async (t) => {
+  t.mock.method(console, "error", () => {});
+  for (const phase of ["run", "recordFire", "markFired", "due", "asks"]) {
+    const crons = createCronStore();
+    const jobs: Awaited<ReturnType<typeof crons.create>>[] = [];
+    for (let i = 0; i < 3; i++)
+      jobs.push(
+        await crons.create({
+          schedule: { everyMs: 1000, firstFireAt: 1 },
+          action: `job-${i}`,
+          owner: "U1",
+          createdBy: "U1",
+          ownerScopeId: scopeId("channel", "C1"),
+        }),
+      );
+    jobs.sort((a, b) => a.id.localeCompare(b.id));
+    let calls = 0,
+      asks = 0;
+    if (phase === "due")
+      crons.due = async () => {
+        throw new Error("query");
+      };
+    if (phase === "recordFire") {
+      const record = crons.recordFire;
+      crons.recordFire = async (id, entry) => {
+        if (id === jobs[0]!.id) throw new Error("record");
+        await record(id, entry);
+      };
+    }
+    if (phase === "markFired") {
+      const mark = crons.markFired;
+      crons.markFired = async (id, ...args) => {
+        if (id === jobs[0]!.id) throw new Error("mark");
+        await mark(id, ...args);
+      };
+    }
+    const scheduler = createScheduler({
+      crons,
+      deliveries: createDeliveryStore(),
+      idempotency: createIdempotencyStore(),
+      identity: createIdentityService(),
+      run: async () => {
+        calls++;
+        if (phase === "run" && calls === 1) throw new Error("dispatch");
+        return { status: "ok", reply: "ok" };
+      },
+      sweepAsks: async () => {
+        asks++;
+        if (phase === "asks") throw new Error("maintenance");
+      },
+    });
+    if (phase === "due" || phase === "asks") await assert.rejects(scheduler.tick(10));
+    else await scheduler.tick(10);
+    assert.equal(asks, 1);
+    assert.equal(calls, phase === "due" ? 0 : 3);
+    if (phase === "run" || phase === "recordFire" || phase === "markFired")
+      assert.equal((await crons.get(jobs[0]!.id))?.lastFiredAt, undefined);
+  }
+});
+
+test("fallback validates fan-out caps and does not sweep asks without its lease", async () => {
+  const deps = {
+    crons: createCronStore(),
+    deliveries: createDeliveryStore(),
+    idempotency: createIdempotencyStore(),
+    identity: createIdentityService(),
+    run: async (): Promise<TurnResult> => ({ status: "ok" }),
+  };
+  for (const cap of [0, -1, 1.5, NaN, Infinity])
+    assert.throws(() => createScheduler({ ...deps, maxFiresPerTick: cap }));
+  let asks = 0;
+  const scheduler = createScheduler({
+    ...deps,
+    leaderLease: fakeLease(() => false),
+    sweepAsks: async () => {
+      asks++;
+    },
+  });
+  await scheduler.tick(10);
+  assert.equal(asks, 0);
 });

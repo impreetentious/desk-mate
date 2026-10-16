@@ -931,7 +931,7 @@ export function buildApp(
   };
   const orchestrator = createOrchestrator(orchestratorDeps);
 
-  wireRunResultDeliveries(runs, deliveries, tasks);
+  const drainRunDeliveries = wireRunResultDeliveries(runs, deliveries, tasks);
   const idempotency = createIdempotencyStore(artifactMap<IdempotencyRecord>("idempotency"));
   const skillFetcher = createGitFetcher(
     keychain
@@ -1036,6 +1036,7 @@ export function buildApp(
     config: configStore,
     crons,
     deliveries,
+    drainRunDeliveries,
     directory,
     projects,
     environments,

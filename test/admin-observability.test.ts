@@ -8,6 +8,7 @@ import { join } from "node:path";
 import type { AddressInfo } from "node:net";
 import { createInsecureTestServer } from "../src/api/server.ts";
 import { buildApp } from "../src/wiring.ts";
+import { scopeId } from "../src/types.ts";
 import type { TurnRequest } from "../src/types.ts";
 import { testConfig } from "./support/test-config.ts";
 
@@ -1368,5 +1369,49 @@ test("admin governance: browse model round-trips, validates, and is org-scoped",
     assert.equal((await getJson(base, "/v1/admin/scopes/org:default-org")).browseModel, null);
   } finally {
     await new Promise<void>((r) => server.close(() => r()));
+  }
+});
+
+test("admin runs query scoped thread references before paging and reject cross-scope cursors", async () => {
+  const s = start();
+  try {
+    const quietScope = scopeId("channel", "quiet");
+    const busyScope = scopeId("channel", "busy");
+    await s.built.sessions.getOrCreateByThread("quiet-ref", "channel", quietScope);
+    await s.built.sessions.getOrCreateByThread("busy-ref", "channel", busyScope);
+    const request = {
+      actor: { id: "internal:U1", type: "internal" as const },
+      conversation: { kind: "dm" as const, threadRef: "quiet-ref", audience: [] },
+      origin: { kind: "direct" as const },
+      text: "fixture",
+    };
+    const old = (await s.built.runs.enqueue({ sessionId: "quiet-ref", request })).run;
+    old.createdAt = 1;
+    for (let i = 0; i < 205; i++) await s.built.runs.enqueue({ sessionId: "busy-ref", request });
+    const quiet = await getJson(s.base, `/v1/admin/runs?scope=${quietScope}`);
+    assert.equal(quiet.active, 1);
+    assert.deepEqual(
+      quiet.runs.map((r: { id: string }) => r.id),
+      [old.id],
+    );
+    const busy = await getJson(s.base, `/v1/admin/runs?scope=${busyScope}`);
+    assert.equal(busy.active, 205);
+    assert.equal(busy.runs.length, 200);
+    assert.ok(busy.nextCursor);
+    const page = await getJson(s.base, `/v1/admin/runs?scope=${busyScope}&cursor=${busy.nextCursor}`);
+    assert.equal(page.runs.length, 5);
+    assert.equal(page.active, 205);
+    assert.equal(new Set([...busy.runs, ...page.runs].map((r: { id: string }) => r.id)).size, 205);
+    assert.equal((await get(s.base, `/v1/admin/runs?scope=${quietScope}&cursor=${busy.nextCursor}`)).status, 400);
+    assert.equal((await get(s.base, `/v1/admin/runs?scope=${quietScope}&cursor=bad`)).status, 400);
+    const session = await s.built.sessions.getByThread("quiet-ref");
+    await s.built.sessions.deleteSession(session!.id);
+    const deleted = await getJson(s.base, `/v1/admin/runs?scope=${quietScope}`);
+    assert.deepEqual(deleted.runs, []);
+    assert.equal(deleted.active, 0);
+    const org = await getJson(s.base, "/v1/admin/runs?scope=org:default-org");
+    assert.equal(org.active, 206);
+  } finally {
+    await s.close();
   }
 });

@@ -135,4 +135,4 @@ AGPL-3.0-only © 2026 Sidakpreet Singh — see [LICENSE](LICENSE). Version 3 onl
 
 ---
 
-**Version:** v0.19.4
+**Version:** v0.19.5

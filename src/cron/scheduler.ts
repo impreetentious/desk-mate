@@ -110,6 +110,9 @@ function renderCronFireInput(cron: Cron, mentionRoster?: string): string {
 export function createScheduler(deps: SchedulerDeps): Scheduler {
   const now = deps.now ?? (() => Date.now());
   const maxFiresPerTick = deps.maxFiresPerTick ?? 100;
+  if (!Number.isInteger(maxFiresPerTick) || maxFiresPerTick <= 0)
+    throw new Error("maxFiresPerTick must be a positive integer");
+  let dueCursor: { scheduledAt: number; id: string } | null = null;
   const leaderLease = deps.leaderLease ?? createNoopLeaderLease();
 
   async function fire(cron: Cron, t: number, fireKey: string, scheduledAt?: number): Promise<{ authzFailed: boolean }> {
@@ -173,22 +176,59 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
   }
 
   const fireDue = async (t: number): Promise<void> => {
-    const due = await deps.crons.due(t);
-    const batch = due.slice(0, maxFiresPerTick);
-    if (due.length > batch.length) {
-      console.warn(`[scheduler] fan-out capped: firing ${batch.length}/${due.length} due crons this tick`);
+    const due = (await deps.crons.due(t)).sort(
+      (a, b) => a.scheduledAt - b.scheduledAt || Number(a.id > b.id) - Number(a.id < b.id),
+    );
+    if (!due.length) {
+      dueCursor = null;
+      return;
     }
+    const successor = dueCursor
+      ? due.findIndex(
+          (c) =>
+            c.scheduledAt > dueCursor!.scheduledAt ||
+            (c.scheduledAt === dueCursor!.scheduledAt && c.id > dueCursor!.id),
+        )
+      : 0;
+    const start = successor < 0 ? 0 : successor;
+    const rotated = due.slice(start).concat(due.slice(0, start));
+    const batch = rotated.slice(0, maxFiresPerTick);
+    if (due.length > batch.length)
+      console.warn(`[scheduler] fan-out capped: firing ${batch.length}/${due.length} due crons this tick`);
     for (const cron of batch) {
-      const { authzFailed } = await fire(cron, t, `cron:${cron.id}:${cron.scheduledAt}`, cron.scheduledAt);
-      if (!authzFailed) await deps.crons.markFired(cron.id, t, cron.scheduledAt);
+      dueCursor = { scheduledAt: cron.scheduledAt, id: cron.id };
+      try {
+        const { authzFailed } = await fire(cron, t, `cron:${cron.id}:${cron.scheduledAt}`, cron.scheduledAt);
+        if (!authzFailed) await deps.crons.markFired(cron.id, t, cron.scheduledAt);
+      } catch (e) {
+        console.error(`[scheduler] job failed: cron=${cron.id} slot=${cron.scheduledAt}`, e);
+      }
     }
   };
 
   const tick = async (nowArg?: number): Promise<void> => {
     const t = nowArg ?? now();
     await leaderLease.hold(TICK_LEASE_KEY, async () => {
-      await fireDue(t);
-      await deps.sweepAsks?.(t).catch((e: unknown) => console.error("[scheduler] ask sweep failed:", e));
+      let dueError: unknown;
+      let dueFailed = false;
+      let maintenanceError: unknown;
+      let maintenanceFailed = false;
+      try {
+        await fireDue(t);
+      } catch (e) {
+        dueError = e;
+        dueFailed = true;
+      } finally {
+        try {
+          await deps.sweepAsks?.(t);
+        } catch (e) {
+          console.error("[scheduler] ask sweep failed:", e);
+          maintenanceError = e;
+          maintenanceFailed = true;
+        }
+      }
+      if (dueFailed) throw dueError;
+      if (maintenanceFailed) throw maintenanceError;
     });
   };
 

@@ -468,6 +468,7 @@ export interface AppDeps {
   config: ScopedConfigStore;
   crons: CronStore;
   deliveries: DeliveryStore;
+  drainRunDeliveries?: () => Promise<void>;
   directory: DirectoryStore;
   projects?: ProjectStore;
   deploy: DeployService;
