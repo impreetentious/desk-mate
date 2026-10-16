@@ -113,7 +113,7 @@ operator's own cloud account; initialization does not generate or enable deploym
 and this repository has no production deployment workflow. See
 [`deployment.md`](./deployment.md) for the details.
 
-## Going deeper
+## Going Deeper
 
 - [`docs/getting-started.md`](./docs/getting-started.md) — standing up a deployment for an org
 - [`cli/README.md`](./cli/README.md) — the `deskmate` CLI and the deployment directory contract
@@ -135,4 +135,4 @@ AGPL-3.0-only © 2026 Sidakpreet Singh — see [LICENSE](LICENSE). Version 3 onl
 
 ---
 
-**Version:** v0.19.3
+**Version:** v0.19.4

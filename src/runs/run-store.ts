@@ -47,6 +47,32 @@ export interface EnqueueResult {
   deduped: boolean;
 }
 
+export interface RunQuery {
+  limit?: number;
+  threadRefs?: readonly string[];
+  cursor?: { createdAt: number; id: string };
+}
+
+export interface PendingRunDelivery {
+  run: Run;
+  attempts: number;
+}
+
+export function validateRunQuery(opts: RunQuery): void {
+  if (opts.limit !== undefined && (!Number.isInteger(opts.limit) || opts.limit < 1 || opts.limit > 10000))
+    throw new Error("Invalid run query limit");
+  if (opts.threadRefs && (opts.threadRefs.length > 10000 || opts.threadRefs.some((ref) => typeof ref !== "string")))
+    throw new Error("Invalid run thread-reference filter");
+  if (
+    opts.cursor &&
+    (!Number.isSafeInteger(opts.cursor.createdAt) ||
+      opts.cursor.createdAt < 0 ||
+      typeof opts.cursor.id !== "string" ||
+      !opts.cursor.id)
+  )
+    throw new Error("Invalid run cursor");
+}
+
 export interface RunStore {
   readonly maxClaims?: number;
 
@@ -74,7 +100,17 @@ export interface RunStore {
 
   activeSessionIds(): Promise<string[]>;
 
-  list(opts?: { limit?: number }): Promise<Run[]>;
+  list(opts?: RunQuery): Promise<Run[]>;
+
+  activeCount(threadRefs?: readonly string[]): Promise<number>;
+
+  pendingDeliveries(now?: number): Promise<PendingRunDelivery[]>;
+
+  resolveDelivery(runId: string, outcome: "enqueued" | "suppressed" | "acknowledged"): Promise<void>;
+
+  retryDelivery(runId: string, now?: number): Promise<void>;
+
+  deliveryStats(threadRefs?: readonly string[]): Promise<{ pending: number; oldestAgeMs: number | null }>;
 
   reapExpired(
     onRetired?: (sessionIds: string[]) => Promise<void>,

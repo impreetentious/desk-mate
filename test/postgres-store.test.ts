@@ -1,6 +1,8 @@
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { createPostgresSessionStore } from "../src/sessions/postgres-session-store.ts";
+import { createPostgresDeliveryStore } from "../src/delivery/postgres-delivery-store.ts";
+import { drainRunResultDeliveries } from "../src/delivery/run-result-delivery.ts";
 import { createPostgresRunStore } from "../src/runs/postgres-run-store.ts";
 import { scopeId, type Principal, type TurnResult } from "../src/types.ts";
 import type { OrchestratorInput } from "../src/core/orchestrator.ts";
@@ -1152,4 +1154,98 @@ test("pg participant view: pin/color are per-participant, survive re-add, and cl
   const cleared = (await s.listByParticipant("U1")).find((x) => x.id === sess.id)!;
   assert.ok(!cleared.pinned);
   assert.equal(cleared.color ?? null, null, "null clears the color");
+});
+
+test(
+  "pg durable delivery survives persistence/admission crashes, two drainers, ack tombstones and migration reruns",
+  { skip },
+  async () => {
+    let runtime = createPostgresRunStore(URL!);
+    const deliveries = createPostgresDeliveryStore(URL!);
+    const request = { ...turn("durable"), surface: "slack", deliveryTarget: "fixture:C1" };
+    const q = await runtime.runs.enqueue({ sessionId: "fixture-recovery", request });
+    const c = await runtime.runs.claimById(q.run.id, "worker", 5000);
+    await runtime.runs.setDeliveryState(q.run.id, c!.leaseToken!, { editRef: "fixture-edit" });
+    await runtime.runs.complete(q.run.id, c!.leaseToken!, {
+      status: "ok",
+      attachments: [{ name: "x", mimetype: "text/plain", blobId: "blob", sizeBytes: 1 }],
+    });
+    assert.equal(await runtime.runs.complete(q.run.id, c!.leaseToken!, { status: "ok", reply: "stale" }), false);
+    await runtime.close();
+    runtime = createPostgresRunStore(URL!);
+    assert.equal((await runtime.runs.pendingDeliveries()).filter((marker) => marker.run.id === q.run.id).length, 1);
+    const resolve = runtime.runs.resolveDelivery;
+    runtime.runs.resolveDelivery = async () => {
+      throw new Error("after insertion");
+    };
+    await drainRunResultDeliveries(runtime.runs, deliveries);
+    runtime.runs.resolveDelivery = resolve;
+    await runtime.close();
+    runtime = createPostgresRunStore(URL!);
+    await Promise.all([
+      drainRunResultDeliveries(runtime.runs, deliveries, undefined, Date.now() + 2000),
+      drainRunResultDeliveries(runtime.runs, deliveries, undefined, Date.now() + 2000),
+    ]);
+    const pending = (await deliveries.pending("slack")).filter((d) => d.idempotencyKey === `run:${q.run.id}`);
+    assert.equal(pending.length, 1);
+    assert.equal(pending[0]!.destination.editRef, "fixture-edit");
+    assert.equal(pending[0]!.attachments?.[0]?.blobId, "blob");
+    assert.equal((await runtime.runs.deliveryStats()).pending, 0);
+    const acked = await runtime.runs.enqueue({ sessionId: "fixture-acked", request });
+    const ac = await runtime.runs.claimById(acked.run.id, "w", 5000);
+    await deliveries.ackByKey(`run:${acked.run.id}`, 10);
+    await runtime.runs.complete(acked.run.id, ac!.leaseToken!, { status: "ok", reply: "already live" });
+    const parked = await runtime.runs.enqueue({ sessionId: "fixture-parked", request, maxAttempts: 1 });
+    const pc = await runtime.runs.claimById(parked.run.id, "w", 1);
+    await new Promise((r) => setTimeout(r, 3));
+    await runtime.runs.reapExpired(undefined, { maxAgeMs: 0 });
+    assert.equal((await runtime.runs.get(parked.run.id))!.status, "failed");
+    assert.equal(await runtime.runs.complete(parked.run.id, pc!.leaseToken!, { status: "ok", reply: "stale" }), false);
+    await drainRunResultDeliveries(runtime.runs, deliveries);
+    assert.equal(
+      (await deliveries.pending("slack")).filter((d) => d.idempotencyKey === `run:${acked.run.id}`).length,
+      0,
+    );
+    assert.equal(
+      (await deliveries.pending("slack")).filter((d) => d.idempotencyKey === `run:${parked.run.id}`).length,
+      1,
+    );
+    const pg = (await import("pg")).default;
+    const pool = new pg.Pool({ connectionString: URL });
+    await pool.query(
+      "INSERT INTO runs(id,session_id,status,request,created_at,finished_at) VALUES ('fixture-legacy','fixture','done',$1,0,0)",
+      [JSON.stringify(request)],
+    );
+    await runtime.close();
+    runtime = createPostgresRunStore(URL!);
+    await runtime.runs.pendingDeliveries();
+    const legacy = await pool.query("SELECT delivery_marker FROM runs WHERE id='fixture-legacy'");
+    assert.equal(legacy.rows[0].delivery_marker, "legacy");
+    await runtime.close();
+    await pool.end();
+  },
+);
+
+test("pg scoped SQL precedes limit and stable cursor; active count is independent", { skip }, async () => {
+  const runtime = createPostgresRunStore(URL!);
+  const quiet = await runtime.runs.enqueue({ sessionId: "fixture-quiet", request: turn("quiet") });
+  const pg = (await import("pg")).default;
+  const pool = new pg.Pool({ connectionString: URL });
+  await pool.query("UPDATE runs SET created_at=1 WHERE id=$1", [quiet.run.id]);
+  for (let i = 0; i < 205; i++) await runtime.runs.enqueue({ sessionId: "fixture-busy", request: turn("busy") });
+  assert.deepEqual(
+    (await runtime.runs.list({ threadRefs: ["fixture-quiet"] })).map((r) => r.id),
+    [quiet.run.id],
+  );
+  assert.equal(await runtime.runs.activeCount(["fixture-busy"]), 205);
+  assert.deepEqual(await runtime.runs.list({ threadRefs: [] }), []);
+  const first = await runtime.runs.list({ threadRefs: ["fixture-busy"], limit: 100 });
+  const last = first.at(-1)!;
+  const rest = await runtime.runs.list({
+    threadRefs: ["fixture-busy"],
+    cursor: { createdAt: last.createdAt, id: last.id },
+  });
+  assert.equal(new Set([...first, ...rest].map((r) => r.id)).size, 205);
+  await pool.end();
+  await runtime.close();
 });

@@ -298,3 +298,33 @@ for (const backend of backends) {
     assert.deepEqual(JSON.parse(a1.output ?? "null"), { cmd: "attempt-1" });
   });
 }
+
+test("memory run pages filter before limits and stable tied timestamps keep independent active counts", async () => {
+  const { runs } = createMemoryRunStore();
+  const request = {
+    origin: { kind: "direct" as const },
+    actor: { id: "internal:U1", type: "internal" as const },
+    conversation: { kind: "dm" as const, threadRef: "t", audience: [] },
+    text: "hi",
+  };
+  const old = (await runs.enqueue({ sessionId: "quiet-thread", request })).run;
+  old.createdAt = 1;
+  for (let i = 0; i < 205; i++) await runs.enqueue({ sessionId: "busy-thread", request });
+  assert.deepEqual(
+    (await runs.list({ threadRefs: ["quiet-thread"], limit: 200 })).map((r) => r.id),
+    [old.id],
+  );
+  assert.equal(await runs.activeCount(["quiet-thread"]), 1);
+  assert.equal(await runs.activeCount(["busy-thread"]), 205);
+  assert.deepEqual(await runs.list({ threadRefs: [] }), []);
+  const tied = [];
+  for (let i = 0; i < 3; i++) {
+    const r = (await runs.enqueue({ sessionId: "tie", request })).run;
+    r.createdAt = 50;
+    tied.push(r);
+  }
+  const first = (await runs.list({ threadRefs: ["tie"], limit: 1 }))[0]!;
+  const rest = await runs.list({ threadRefs: ["tie"], cursor: { createdAt: first.createdAt, id: first.id } });
+  assert.equal(new Set([first.id, ...rest.map((r) => r.id)]).size, 3);
+  assert.equal(await runs.activeCount(["tie"]), 3);
+});

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
-import type { EnqueueInput, EnqueueResult, ReapEvent, Run, RunDeliveryState, RunStore } from "./run-store.ts";
-import { isTerminal, leaseLapsed } from "./run-store.ts";
+import type { EnqueueInput, EnqueueResult, ReapEvent, Run, RunDeliveryState, RunStore, RunQuery } from "./run-store.ts";
+import { isTerminal, leaseLapsed, validateRunQuery } from "./run-store.ts";
 import type { LedgerBegin, ToolLedger } from "./tool-ledger.ts";
 
 export interface MemoryRuntime {
@@ -12,6 +12,7 @@ export interface MemoryRuntime {
 export function createMemoryRunStore(opts?: { maxClaims?: number }): MemoryRuntime {
   const maxClaims = opts?.maxClaims ?? Number.POSITIVE_INFINITY;
   const runs = new Map<string, Run>();
+  const deliveryMarkers = new Map<string, { status: string; attempts: number; nextAt: number }>();
   const byKey = new Map<string, string>();
   const ledger = new Map<string, string>();
   const events = new EventEmitter();
@@ -27,6 +28,8 @@ export function createMemoryRunStore(opts?: { maxClaims?: number }): MemoryRunti
 
   function settle(run: Run): void {
     if (!isTerminal(run.status)) return;
+    if (!deliveryMarkers.has(run.id))
+      deliveryMarkers.set(run.id, { status: "pending", attempts: 0, nextAt: Date.now() });
     events.emit(run.id, run);
     for (const listener of terminalListeners) listener(run);
   }
@@ -99,7 +102,7 @@ export function createMemoryRunStore(opts?: { maxClaims?: number }): MemoryRunti
 
     async complete(runId, leaseToken, result) {
       const run = runs.get(runId);
-      if (!run || run.leaseToken !== leaseToken) return false;
+      if (!run || run.status !== "running" || run.leaseToken !== leaseToken) return false;
       run.status = "done";
       run.result = result;
       run.leaseToken = null;
@@ -145,8 +148,58 @@ export function createMemoryRunStore(opts?: { maxClaims?: number }): MemoryRunti
       return [...ids];
     },
 
-    async list({ limit = 200 }: { limit?: number } = {}) {
-      return [...runs.values()].sort((a, b) => b.createdAt - a.createdAt).slice(0, limit);
+    async list(opts: RunQuery = {}) {
+      validateRunQuery(opts);
+      const { limit = 200, threadRefs, cursor } = opts;
+      const refs = threadRefs ? new Set(threadRefs) : null;
+      return [...runs.values()]
+        .filter(
+          (r) =>
+            (!refs || refs.has(r.sessionId)) &&
+            (!cursor || r.createdAt < cursor.createdAt || (r.createdAt === cursor.createdAt && r.id < cursor.id)),
+        )
+        .sort((a, b) => b.createdAt - a.createdAt || Number(b.id > a.id) - Number(b.id < a.id))
+        .slice(0, limit);
+    },
+
+    async activeCount(threadRefs) {
+      validateRunQuery({ threadRefs });
+      const refs = threadRefs ? new Set(threadRefs) : null;
+      return [...runs.values()].filter((r) => !isTerminal(r.status) && (!refs || refs.has(r.sessionId))).length;
+    },
+
+    async pendingDeliveries(now = Date.now()) {
+      return [...deliveryMarkers.entries()]
+        .filter(([, marker]) => marker.status === "pending" && marker.nextAt <= now)
+        .map(([id, marker]) => ({ run: runs.get(id)!, attempts: marker.attempts }))
+        .sort((a, b) => a.run.finishedAt! - b.run.finishedAt! || a.run.id.localeCompare(b.run.id))
+        .slice(0, 100);
+    },
+
+    async resolveDelivery(runId, outcome) {
+      const marker = deliveryMarkers.get(runId);
+      if (marker?.status === "pending") marker.status = outcome;
+    },
+
+    async retryDelivery(runId, now = Date.now()) {
+      const marker = deliveryMarkers.get(runId);
+      if (marker?.status !== "pending") return;
+      marker.nextAt = now + Math.min(60, 2 ** Math.min(marker.attempts, 6)) * 1000;
+      marker.attempts++;
+    },
+
+    async deliveryStats(threadRefs) {
+      validateRunQuery({ threadRefs });
+      const refs = threadRefs ? new Set(threadRefs) : null;
+      const pending = [...deliveryMarkers.entries()].filter(
+        ([id, m]) => m.status === "pending" && (!refs || refs.has(runs.get(id)!.sessionId)),
+      );
+      return {
+        pending: pending.length,
+        oldestAgeMs: pending.length
+          ? Math.max(0, Date.now() - Math.min(...pending.map(([id]) => runs.get(id)!.finishedAt!)))
+          : null,
+      };
     },
 
     async reapExpired(

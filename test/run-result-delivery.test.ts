@@ -2,7 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createMemoryRunStore } from "../src/runs/memory-run-store.ts";
 import { createDeliveryStore } from "../src/delivery/delivery-store.ts";
-import { runResultDelivery, wireRunResultDeliveries } from "../src/delivery/run-result-delivery.ts";
+import {
+  drainRunResultDeliveries,
+  runResultDelivery,
+  wireRunResultDeliveries,
+} from "../src/delivery/run-result-delivery.ts";
 import type { Run } from "../src/runs/run-store.ts";
 import type { OrchestratorInput } from "../src/core/orchestrator.ts";
 import type { Principal, TurnResult } from "../src/types.ts";
@@ -228,4 +232,73 @@ test("wired stores: a parked run lands a durable, non-ackable failure note", asy
   assert.equal(pending.length, 1, "the park enqueues a durable recovery copy");
   assert.equal(pending[0]!.text, "⚠️ I couldn't finish that turn: boom");
   assert.equal(pending[0]!.idempotencyKey, `run:${parked.id}`);
+});
+
+test("durable markers recover terminal persistence and admission crashes without resurrecting acknowledgements", async () => {
+  const { runs } = createMemoryRunStore();
+  const deliveries = createDeliveryStore();
+  const queued = await runs.enqueue({ sessionId: "recovery", request: turn("hi", "C9") });
+  const claimed = await runs.claim("worker", 5000);
+  await runs.setDeliveryState(queued.run.id, claimed!.leaseToken, { editRef: "durable-edit" });
+  await runs.complete(queued.run.id, claimed!.leaseToken!, {
+    status: "ok",
+    attachments: [{ name: "a.csv", mimetype: "text/csv", sizeBytes: 1, blobId: "blob" }],
+  });
+  assert.equal((await runs.pendingDeliveries()).length, 1, "marker exists without wiring or callback");
+  const originalResolve = runs.resolveDelivery;
+  runs.resolveDelivery = async () => {
+    throw new Error("crash after durable enqueue");
+  };
+  await drainRunResultDeliveries(runs, deliveries);
+  assert.equal((await deliveries.pending("slack")).length, 1);
+  assert.equal((await runs.deliveryStats()).pending, 1);
+  runs.resolveDelivery = originalResolve;
+  await Promise.all([
+    drainRunResultDeliveries(runs, deliveries, undefined, Date.now() + 2000),
+    drainRunResultDeliveries(runs, deliveries, undefined, Date.now() + 2000),
+  ]);
+  const pending = await deliveries.pending("slack");
+  assert.equal(pending.length, 1);
+  assert.equal(pending[0]!.destination.editRef, "durable-edit");
+  assert.equal(pending[0]!.attachments?.[0]?.blobId, "blob");
+  assert.equal((await runs.deliveryStats()).pending, 0);
+
+  const acked = await runs.enqueue({ sessionId: "acked", request: turn("hi", "C9") });
+  const live = await runs.claim("worker", 5000);
+  await deliveries.ackByKey(`run:${acked.run.id}`, 10);
+  await runs.complete(acked.run.id, live!.leaseToken!, { status: "ok", reply: "already sent" });
+  await drainRunResultDeliveries(runs, deliveries);
+  assert.equal((await deliveries.pending("slack")).length, 1);
+  assert.equal((await runs.deliveryStats()).pending, 0);
+  assert.equal(await runs.complete(acked.run.id, live!.leaseToken!, { status: "ok", reply: "stale" }), false);
+});
+
+test("poison markers back off individually and suppression is durably resolved", async () => {
+  const { runs } = createMemoryRunStore();
+  const deliveries = createDeliveryStore();
+  for (const sessionId of ["poison", "later", "suppressed"]) {
+    const q = await runs.enqueue({
+      sessionId,
+      request: { ...turn("hi", "C9"), ...(sessionId === "suppressed" ? { surfaceTools: true } : {}) },
+    });
+    const c = await runs.claimById(q.run.id, "w", 5000);
+    await runs.complete(q.run.id, c!.leaseToken!, { status: "ok", reply: sessionId });
+  }
+  const original = deliveries.enqueue;
+  deliveries.enqueue = async (input) => {
+    if (input.text === "poison") throw new Error("offline");
+    return original(input);
+  };
+  const now = Date.now();
+  await drainRunResultDeliveries(runs, deliveries, undefined, now);
+  assert.equal((await deliveries.pending("slack")).length, 1);
+  assert.equal((await runs.deliveryStats()).pending, 1);
+  assert.equal((await runs.pendingDeliveries(now + 999)).length, 0);
+  assert.equal((await runs.pendingDeliveries(now + 1000))[0]!.attempts, 1);
+  for (const seconds of [2, 4, 8, 16, 32, 60, 60]) {
+    const marker = (await runs.pendingDeliveries(Number.MAX_SAFE_INTEGER))[0]!;
+    await runs.retryDelivery(marker.run.id, now);
+    assert.equal((await runs.pendingDeliveries(now + seconds * 1000 - 1)).length, 0);
+    assert.equal((await runs.pendingDeliveries(now + seconds * 1000)).length, 1);
+  }
 });

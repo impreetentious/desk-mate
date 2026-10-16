@@ -4,8 +4,8 @@ import { createPgPool } from "../persistence/pg-pool.ts";
 import type { TurnResult } from "../types.ts";
 import type { OrchestratorInput } from "../core/orchestrator.ts";
 import { resolveTurnOrigin } from "../core/turn-origin.ts";
-import type { EnqueueInput, EnqueueResult, ReapEvent, Run, RunDeliveryState, RunStore } from "./run-store.ts";
-import { isTerminal } from "./run-store.ts";
+import type { EnqueueInput, EnqueueResult, ReapEvent, Run, RunDeliveryState, RunStore, RunQuery } from "./run-store.ts";
+import { isTerminal, validateRunQuery } from "./run-store.ts";
 import type { LedgerBegin, ToolLedger } from "./tool-ledger.ts";
 
 export interface PostgresRuntime {
@@ -54,6 +54,11 @@ export function createPostgresRunStore(connectionString: string, opts?: { maxCla
         created_at BIGINT NOT NULL, started_at BIGINT, finished_at BIGINT
       )`,
     `ALTER TABLE runs ADD COLUMN IF NOT EXISTS delivery_state TEXT`,
+    `ALTER TABLE runs ADD COLUMN IF NOT EXISTS delivery_marker TEXT`,
+    `ALTER TABLE runs ADD COLUMN IF NOT EXISTS delivery_attempts INT NOT NULL DEFAULT 0`,
+    `ALTER TABLE runs ADD COLUMN IF NOT EXISTS delivery_next_at BIGINT`,
+    `UPDATE runs SET delivery_marker='legacy' WHERE status IN ('done','failed') AND delivery_marker IS NULL`,
+    `CREATE INDEX IF NOT EXISTS idx_runs_delivery_pending ON runs(delivery_next_at, finished_at, id) WHERE delivery_marker='pending'`,
     `ALTER TABLE runs ADD COLUMN IF NOT EXISTS error_attempts INT NOT NULL DEFAULT 0`,
     `CREATE INDEX IF NOT EXISTS idx_runs_status_created ON runs(status, created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_runs_session_active_created
@@ -113,7 +118,7 @@ export function createPostgresRunStore(connectionString: string, opts?: { maxCla
     const result: TurnResult = { status: "failed", sessionId: run.sessionId, reason };
     const { rowCount } = await q(
       `UPDATE runs SET status='failed', result=$4, lease_token=NULL, lease_expires_at=NULL, worker_id=NULL, finished_at=$5,
-         error_attempts=error_attempts+$6
+         error_attempts=error_attempts+$6, delivery_marker='pending', delivery_attempts=0, delivery_next_at=$5
        WHERE id=$1 AND lease_token=$2 AND status='running' AND ($3::bigint IS NULL OR lease_expires_at <= $3)`,
       [run.id, run.leaseToken, ifExpiredAt, JSON.stringify(result), Date.now(), countsAsError ? 1 : 0],
     );
@@ -197,7 +202,7 @@ export function createPostgresRunStore(connectionString: string, opts?: { maxCla
 
     async complete(runId, leaseToken, result): Promise<boolean> {
       const { rowCount } = await q(
-        "UPDATE runs SET status='done', result=$1, lease_token=NULL, lease_expires_at=NULL, finished_at=$2 WHERE id=$3 AND lease_token=$4",
+        "UPDATE runs SET status='done', result=$1, lease_token=NULL, lease_expires_at=NULL, finished_at=$2, delivery_marker='pending', delivery_attempts=0, delivery_next_at=$2 WHERE id=$3 AND lease_token=$4 AND status='running'",
         [JSON.stringify(result), Date.now(), runId, leaseToken],
       );
       if (rowCount > 0) {
@@ -244,9 +249,58 @@ export function createPostgresRunStore(connectionString: string, opts?: { maxCla
       return rows.map((r) => r.session_id as string);
     },
 
-    async list({ limit = 200 }: { limit?: number } = {}): Promise<Run[]> {
-      const { rows } = await q("SELECT * FROM runs ORDER BY created_at DESC LIMIT $1", [limit]);
+    async list(opts: RunQuery = {}): Promise<Run[]> {
+      validateRunQuery(opts);
+      const { limit = 200, threadRefs, cursor } = opts;
+      const { rows } = await q(
+        `SELECT * FROM runs WHERE ($2::text[] IS NULL OR session_id = ANY($2))
+         AND ($3::bigint IS NULL OR (created_at,id) < ($3,$4)) ORDER BY created_at DESC, id DESC LIMIT $1`,
+        [limit, threadRefs ?? null, cursor?.createdAt ?? null, cursor?.id ?? null],
+      );
       return rows.map(rowToRun);
+    },
+
+    async activeCount(threadRefs) {
+      validateRunQuery({ threadRefs });
+      const { rows } = await q(
+        "SELECT count(*) AS count FROM runs WHERE status IN ('pending','running') AND ($1::text[] IS NULL OR session_id=ANY($1))",
+        [threadRefs ?? null],
+      );
+      return Number(rows[0]!.count);
+    },
+
+    async pendingDeliveries(now = Date.now()) {
+      const { rows } = await q(
+        "SELECT * FROM runs WHERE delivery_marker='pending' AND delivery_next_at <= $1 ORDER BY finished_at,id LIMIT 100",
+        [now],
+      );
+      return rows.map((r) => ({ run: rowToRun(r), attempts: Number(r.delivery_attempts) }));
+    },
+
+    async resolveDelivery(runId, outcome) {
+      await q("UPDATE runs SET delivery_marker=$2, delivery_next_at=NULL WHERE id=$1 AND delivery_marker='pending'", [
+        runId,
+        outcome,
+      ]);
+    },
+
+    async retryDelivery(runId, now = Date.now()) {
+      await q(
+        "UPDATE runs SET delivery_next_at=$2 + LEAST(60, POWER(2,LEAST(delivery_attempts,6)))::bigint * 1000, delivery_attempts=delivery_attempts+1 WHERE id=$1 AND delivery_marker='pending'",
+        [runId, now],
+      );
+    },
+
+    async deliveryStats(threadRefs) {
+      validateRunQuery({ threadRefs });
+      const { rows } = await q(
+        "SELECT count(*) AS count, min(finished_at) AS oldest FROM runs WHERE delivery_marker='pending' AND ($1::text[] IS NULL OR session_id=ANY($1))",
+        [threadRefs ?? null],
+      );
+      return {
+        pending: Number(rows[0]!.count),
+        oldestAgeMs: rows[0]!.oldest == null ? null : Math.max(0, Date.now() - Number(rows[0]!.oldest)),
+      };
     },
 
     async reapExpired(
